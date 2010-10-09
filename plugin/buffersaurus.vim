@@ -1200,6 +1200,11 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             endfor
         endfor
         let b:bdex_last_render_time = localtime()
+        try
+            " remove extra last line
+            execute("normal! GVX")
+        catch //
+        endtry
         setlocal nomodifiable
         call cursor(1, 1)
         call self.goto_index_entry("n", 0, 1)
