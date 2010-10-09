@@ -1167,7 +1167,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Sets buffer status line.
     function! l:catalog_viewer.setup_buffer_statusline() dict
-        setlocal statusline=%{BdexStatusLineCurrentLineInfo()}%<%=\|%{BdexStatusLineSortRegime()}"
+        setlocal statusline=\-buffersaurus\-\|\ %{BdexStatusLineCurrentLineInfo()}%<%=\|%{BdexStatusLineSortRegime()}"
     endfunction
 
     " Populates the buffer with the catalog index.
@@ -1523,9 +1523,9 @@ endfunction
 
 function! BdexStatusLineCurrentLineInfo()
     let l:line = line(".")
+    let l:status_line = ""
     if exists("b:bdex_catalog_viewer") && has_key(b:bdex_catalog_viewer.jump_map, l:line)
         let l:jump_line = b:bdex_catalog_viewer.jump_map[l:line]
-        let l:status_line = "  -buffersaurus- | "
         if l:jump_line.entry_index >= 0
             let l:status_line .= string(l:jump_line.entry_index + 1) . " of " . b:bdex_catalog_viewer.catalog.size() . " | "
             let l:status_line .= 'File: "' . expand(bufname(l:jump_line.target[0]))
@@ -1533,10 +1533,10 @@ function! BdexStatusLineCurrentLineInfo()
         else
             let l:status_line .= '(Indexed File) | "' . expand(bufname(l:jump_line.target[0])) . '"'
         endif
-        return l:status_line
     else
-        return " (not a valid indexed line)"
+        let l:status_line .= "(not a valid indexed line)"
     endif
+    return l:status_line
 endfunction
 
 function! BdexStatusLineSortRegime()
