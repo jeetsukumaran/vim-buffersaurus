@@ -9,14 +9,21 @@ COMMANDS~
                     [term] (see |buffersaurus-terms|). If [term] is not given,
                     then the default set of terms for a particular buffer's
                     filetype will by used, typically generating a
-                    "table-of-contents" style listing. By default, thec catalog
+                    "table-of-contents" style listing. By default, the catalog
                     will be sorted by file name followed by line number (see
                     |buffersaurus-sort|).
 
 :Bdindex[!] [term]
+                    Same as |buffersaurus-bdcat|, but by default sorted by file
+                    name followed by alphabetically by source line text.
 
-
-
+:Bdsearch[!] {pattern}
+                    Search current (without '!') or all (with '!') buffers for
+                    regular expression pattern given by {pattern}. By default,
+                    the catalog will be sorted by file name followed by line
+                    number, though this can be customized by setting the
+                    'g:bdex_viewport_split_policy' variable (see
+                    |buffersaurus-sort|).
 
 ===============================================================================
                                                              *buffersaurus-keys*

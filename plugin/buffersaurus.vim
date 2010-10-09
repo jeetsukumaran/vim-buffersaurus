@@ -1484,6 +1484,9 @@ function! <SID>IndexTerms(term_name, global, sort_regime)
 endfunction
 
 function! <SID>IndexPatterns(pattern, global, sort_regime)
+    if empty(pattern)
+        call s:_bdex_messenger.send_error("search pattern must be specified")
+    endif
     if empty(a:global)
         let l:worklist = ["%"]
     else
@@ -1578,7 +1581,7 @@ let s:_bdex_indexer = s:NewIndexer()
 " ==============================================================================
 command! -bang -nargs=*         Bdcatalog       :call <SID>IndexTerms('<args>', '<bang>', 'fl')
 command! -bang -nargs=*         Bdindex         :call <SID>IndexTerms('<args>', '<bang>', 'fa')
-command! -bang -nargs=*         Bdsearch        :call <SID>IndexPatterns(<q-args>, '<bang>')
+command! -bang -nargs=*         Bdsearch        :call <SID>IndexPatterns(<q-args>, '<bang>', '')
 command! -range -bang -nargs=0  Bdnext          :call <SID>GotoEntry("n")
 command! -range -bang -nargs=0  Bdprev          :call <SID>GotoEntry("p")
 command! -bang -nargs=0         Bdstatus        :call <SID>ShowCatalogStatus('<bang>')
