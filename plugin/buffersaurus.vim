@@ -1586,8 +1586,8 @@ command! -range -bang -nargs=0  Bdnext          :call <SID>GotoEntry("n")
 command! -range -bang -nargs=0  Bdprev          :call <SID>GotoEntry("p")
 command! -bang -nargs=0         Bdstatus        :call <SID>ShowCatalogStatus('<bang>')
 
-nnoremap <silent>[k :<C-U>Bdprev<CR>
-nnoremap <silent>]k :<C-U>Bdnext<CR>
+nnoremap <silent><Leader>[ :<C-U>Bdprev<CR>
+nnoremap <silent><Leader>] :<C-U>Bdnext<CR>
 " 1}}}
 
 " restore options
