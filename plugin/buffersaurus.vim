@@ -1576,7 +1576,7 @@ let s:_bdex_indexer = s:NewIndexer()
 
 " Public Command and Key Maps {{{1
 " ==============================================================================
-command! -bang -nargs=*         Bdcat           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -bang -nargs=*         Bdcatalog       :call <SID>IndexTerms('<args>', '<bang>', 'fl')
 command! -bang -nargs=*         Bdindex         :call <SID>IndexTerms('<args>', '<bang>', 'fa')
 command! -bang -nargs=*         Bdsearch        :call <SID>IndexPatterns(<q-args>, '<bang>')
 command! -range -bang -nargs=0  Bdnext          :call <SID>GotoEntry("n")
