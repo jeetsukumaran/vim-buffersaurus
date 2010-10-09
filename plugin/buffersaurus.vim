@@ -1,0 +1,1587 @@
+" buffersaurus -- Vim document buffer indexing and navigation utility
+
+" avoid line continuation issues (see ':help user_41.txt')
+let s:save_cpo = &cpo
+set cpo&vim
+
+" Logger Setup (':g/s:_LOG/normal VX' to strip all logging code) {{{1
+" (s:_LOG) ====================================================================
+let s:_LOG = log#getLogger(expand('<sfile>:t'))
+" (s:_LOG) 1}}}
+
+" Plugin Options {{{1
+" =============================================================================
+
+" TODO: wrap these up in checks for pre-defines
+let g:bdex_move_wrap = 1
+
+" Catalog Sort Regimes {{{2
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" (see below: `s:bdex_catalog_sort_regimes`
+let g:bdex_sort_regime = 'f'
+" 2}}}
+
+" endif
+
+" 1}}}
+
+" Script Data and Variables {{{1
+" =============================================================================
+
+"  Display column sizes {{{2
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" Display columns.
+let s:bdex_lnum_field_width = 6
+let s:bdex_entry_label_field_width = 4
+" TODO: populate the following based on user setting, as well as allow
+" abstraction from the actual Vim command (e.g., option "top" => "zt")
+let s:bdex_post_move_cmd = "normal! zt"
+
+" 2}}}
+
+" Split Modes {{{2
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" Split modes are indicated by a single letter. Upper-case letters indicate
+" that the SCREEN (i.e., the entire application "window" from the operating
+" system's perspective) should be split, while lower-case letters indicate
+" that the VIEWPORT (i.e., the "window" in Vim's terminology, referring to the
+" various subpanels or splits within Vim) should be split.
+" Split policy indicators and their corresponding modes are:
+"   ``/`d`/`D'  : use default splitting mode
+"   `n`/`N`     : NO split, use existing window.
+"   `L`         : split SCREEN vertically, with new split on the left
+"   `l`         : split VIEWPORT vertically, with new split on the left
+"   `R`         : split SCREEN vertically, with new split on the right
+"   `r`         : split VIEWPORT vertically, with new split on the right
+"   `T`         : split SCREEN horizontally, with new split on the top
+"   `t`         : split VIEWPORT horizontally, with new split on the top
+"   `B`         : split SCREEN horizontally, with new split on the bottom
+"   `b`         : split VIEWPORT horizontally, with new split on the bottom
+let s:bdex_viewport_split_modes = {
+            \ "d"   : "sp",
+            \ "D"   : "sp",
+            \ "N"   : "buffer",
+            \ "n"   : "buffer",
+            \ "L"   : "topleft vert sbuffer",
+            \ "l"   : "leftabove vert sbuffer",
+            \ "R"   : "botright vert sbuffer",
+            \ "r"   : "rightbelow vert sbuffer",
+            \ "T"   : "topleft sbuffer",
+            \ "t"   : "leftabove sbuffer",
+            \ "B"   : "botright sbuffer",
+            \ "b"   : "rightbelow",
+            \ }
+" 2}}}
+
+" Catalog Sort Regimes {{{2
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+let s:bdex_catalog_sort_regimes = ['fl', 'fa', 'a']
+let s:bdex_catalog_sort_regime_desc = {
+            \ 'fl' : ["F(L#)", "by filepath, then by line number"],
+            \ 'fa' : ["F(A-Z)", "by filepath, then by line text"],
+            \ 'a'  : ["A-Z", "by line text"],
+            \ }
+" 2}}}
+
+" 1}}}
+
+" Utilities {{{1
+" ==============================================================================
+
+" Text Formatting {{{2
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+function! s:Format_AlignLeft(text, width, fill_char)
+    let l:fill = repeat(a:fill_char, a:width-len(a:text))
+    return a:text . l:fill
+endfunction
+
+function! s:Format_AlignRight(text, width, fill_char)
+    let l:fill = repeat(a:fill_char, a:width-len(a:text))
+    return l:fill . a:text
+endfunction
+
+function! s:Format_Time(secs)
+    if exists("*strftime")
+        return strftime("%Y-%m-%d %H:%M:%S", a:secs)
+    else
+        return (localtime() - a:secs) . " secs ago"
+    endif
+endfunction
+
+function! s:Format_EscapedFilename(file)
+  if exists('*fnameescape')
+    return fnameescape(a:file)
+  else
+    return escape(a:file," \t\n*?[{`$\\%#'\"|!<")
+  endif
+endfunction
+
+" trunc: -1 = truncate left, 0 = no truncate, +1 = truncate right
+function! s:Format_Truncate(str, max_len, trunc)
+    if len(a:str) > a:max_len
+        if a:trunc > 0
+            return strpart(a:str, a:max_len - 4) . " ..."
+        elseif a:trunc < 0
+            return '... ' . strpart(a:str, len(a:str) - a:max_len + 4)
+        endif
+    else
+        return a:str
+    endif
+endfunction
+
+" Pads/truncates text to fit a given width.
+" align: -1/0 = align left, 0 = no align, 1 = align right
+" trunc: -1 = truncate left, 0 = no truncate, +1 = truncate right
+function! s:Format_Fill(str, width, align, trunc)
+    let l:prepped = a:str
+    if a:trunc != 0
+        let l:prepped = s:Format_Truncate(a:str, a:width, a:trunc)
+    endif
+    if len(l:prepped) < a:width
+        if a:align > 0
+            let l:prepped = s:Format_AlignRight(l:prepped, a:width, " ")
+        elseif a:align < 0
+            let l:prepped = s:Format_AlignLeft(l:prepped, a:width, " ")
+        endif
+    endif
+    return l:prepped
+endfunction
+
+" 2}}}
+
+" Messaging {{{2
+" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+function! s:NewMessenger(name)
+
+    " allocate a new pseudo-object
+    let l:messenger = {}
+    let l:messenger["name"] = a:name
+    if empty(a:name)
+        let l:messenger["title"] = "buffersaurus"
+    else
+        let l:messenger["title"] = "buffersaurus (" . l:messenger["name"] . ")"
+    endif
+
+    function! l:messenger.format_message(leader, msg) dict
+        return self.title . ": " . a:leader.a:msg
+    endfunction
+
+    function! l:messenger.format_exception( msg) dict
+        return a:msg
+    endfunction
+
+    function! l:messenger.send_error(msg) dict
+        redraw
+        echohl ErrorMsg
+        echomsg self.format_message("[ERROR] ", a:msg)
+        echohl None
+    endfunction
+
+    function! l:messenger.send_warning(msg) dict
+        redraw
+        echohl WarningMsg
+        echomsg self.format_message("[WARNING] ", a:msg)
+        echohl None
+    endfunction
+
+    function! l:messenger.send_status(msg) dict
+        redraw
+        echohl None
+        echomsg self.format_message("", a:msg)
+    endfunction
+
+    function! l:messenger.send_info(msg) dict
+        redraw
+        echohl None
+        echo self.format_message("", a:msg)
+    endfunction
+
+    return l:messenger
+
+endfunction
+" 2}}}
+
+" 1}}}
+
+" BufferManager {{{1
+" ==============================================================================
+
+" Creates the script-wide buffer/window manager.
+function! s:NewBufferManager()
+
+    " initialize
+    let l:buffer_manager = {}
+
+    " Returns a list of all existing buffer numbers, excluding unlisted ones
+    " unless `include_unlisted` is non-empty.
+    function! l:buffer_manager.get_buf_nums(include_unlisted)
+        let l:buf_num_list = []
+        for l:idx in range(1, bufnr("$"))
+            if bufexists(l:idx) && (empty(a:include_unlisted) || buflisted(l:idx))
+                call add(l:buf_num_list, l:idx)
+            endif
+        endfor
+        return l:buf_num_list
+    endfunction
+
+    " Returns a list of all existing buffer names, excluding unlisted ones
+    " unless `include_unlisted` is non-empty.
+    function! l:buffer_manager.get_buf_names(include_unlisted, expand_modifiers)
+        let l:buf_name_list = []
+        for l:idx in range(1, bufnr("$"))
+            if bufexists(l:idx) && (empty(!a:include_unlisted) || buflisted(l:idx))
+                call add(l:buf_name_list, expand(bufname(l:idx).a:expand_modifiers))
+            endif
+        endfor
+        return l:buf_name_list
+    endfunction
+
+    " Searches for all windows that have a window-scoped variable `varname`
+    " with value that matches the expression `expr`. Returns list of window
+    " numbers that meet the criterion.
+    function! l:buffer_manager.find_windows_with_var(varname, expr)
+        let l:results = []
+        for l:wni in range(1, winnr("$"))
+            let l:wvar = getwinvar(l:wni, "")
+            if empty(a:varname)
+                call add(l:results, l:wni)
+            elseif has_key(l:wvar, a:varname) && l:wvar[a:varname] =~ a:expr
+                call add(l:results, l:wni)
+            endif
+        endfor
+        return l:results
+    endfunction
+
+    " Searches for all buffers that have a buffer-scoped variable `varname`
+    " with value that matches the expression `expr`. Returns list of buffer
+    " numbers that meet the criterion.
+    function! l:buffer_manager.find_buffers_with_var(varname, expr)
+        let l:results = []
+        for l:bni in range(1, bufnr("$"))
+            if !bufexists(l:bni)
+                continue
+            endif
+            let l:bvar = getbufvar(l:bni, "")
+            if empty(a:varname)
+                call add(l:results, l:bni)
+            elseif has_key(l:bvar, a:varname) && l:bvar[a:varname] =~ a:expr
+                call add(l:results, l:bni)
+            endif
+        endfor
+        return l:results
+    endfunction
+
+    " Returns a dictionary with the buffer number as keys (if `key` is empty)
+    " and the parsed information regarding each buffer as values. If `key` is
+    " given (e.g. key='num'; key='name', key='filepath') then that field will
+    " be used as the dictionary keys instead.
+    function! l:buffer_manager.get_buffers_info(key) dict
+        if empty(a:key)
+            let l:key = "num"
+        else
+            let l:key = a:key
+        endif
+        redir => buffers_output
+        execute('silent ls')
+        redir END
+        let l:buffers_info = {}
+        let l:buffers_output_rows = split(l:buffers_output, "\n")
+        for l:buffers_output_row in l:buffers_output_rows
+            let l:parts = matchlist(l:buffers_output_row, '^\s*\(\d\+\)\(.....\) "\(.*\)"\s\+line \d\+$')
+            let l:info = {}
+            let l:info["num"] = l:parts[1] + 0
+            if l:parts[2][0] == "u"
+                let l:info["is_unlisted"] = 1
+                let l:info["is_listed"] = 0
+            else
+                let l:info["is_unlisted"] = 0
+                let l:info["is_listed"] = 1
+            endif
+            if l:parts[2][1] == "%"
+                let l:info["is_current"] = 1
+                let l:info["is_alternate"] = 0
+            elseif l:parts[2][1] == "#"
+                let l:info["is_current"] = 0
+                let l:info["is_alternate"] = 1
+            else
+                let l:info["is_current"] = 0
+                let l:info["is_alternate"] = 0
+            endif
+            if l:parts[2][2] == "a"
+                let l:info["is_active"] = 1
+                let l:info["is_loaded"] = 1
+                let l:info["is_visible"] = 1
+            elseif l:parts[2][2] == "h"
+                let l:info["is_active"] = 0
+                let l:info["is_loaded"] = 1
+                let l:info["is_visible"] = 0
+            else
+                let l:info["is_active"] = 0
+                let l:info["is_loaded"] = 0
+                let l:info["is_visible"] = 0
+            endif
+            if l:parts[2][3] == "-"
+                let l:info["is_modifiable"] = 0
+                let l:info["is_readonly"] = 0
+            elseif l:parts[2][3] == "="
+                let l:info["is_modifiable"] = 1
+                let l:info["is_readonly"] = 1
+            else
+                let l:info["is_modifiable"] = 1
+                let l:info["is_readonly"] = 0
+            endif
+            if l:parts[2][4] == "+"
+                let l:info["is_modified"] = 1
+                let l:info["is_readerrror"] = 0
+            elseif l:parts[2][4] == "x"
+                let l:info["is_modified"] = 0
+                let l:info["is_readerror"] = 0
+            else
+                let l:info["is_modified"] = 0
+                let l:info["is_readerror"] = 0
+            endif
+            let l:info["name"] = parts[3]
+            let l:info["filepath"] = fnamemodify(l:info["name"], ":p")
+            if !has_key(l:info, l:key)
+                throw s:_bdex_messenger.format_exception("Invalid key requested: '" . l:key . "'")
+            endif
+            let l:buffers_info[l:info[l:key]] = l:info
+        endfor
+        return l:buffers_info
+    endfunction
+
+    " Returns split mode to use for a new Bdex viewport. If given an
+    " argument, this should be a single letter indicating the split policy. If
+    " no argument is given and `g:bdex_viewport_split_policy` exists, then it
+    " will be used. If `g:bdex_viewport_split_policy` does not exist, then a
+    " default will be used.
+    function! l:buffer_manager.get_split_mode(...) dict
+        if a:0 == 0
+            if exists("g:bdex_viewport_split_policy")
+                if has_key(s:bdex_viewport_split_modes, g:bdex_viewport_split_policy)
+                    return s:bdex_viewport_split_modes[g:bdex_viewport_split_policy]
+                else
+                    call s:_bdex_messenger.send_error("Unrecognized split mode specified by 'g:bdex_viewport_split_policy': " . g:bdex_viewport_split_policy)
+                endif
+            endif
+        else
+            let l:policy = a:1
+            if has_key(s:bdex_viewport_split_modes, l:policy[0])
+                return s:bdex_viewport_split_modes[l:policy[0]]
+            else
+                throw s:_bdex_messenger.format_exception("Unrecognized split mode: '" . l:policy . "')
+            endif
+        endif
+        return s:bdex_viewport_split_modes["B"]
+    endfunction
+
+    " Detect filetype. From the 'taglist' plugin.
+    " Copyright (C) 2002-2007 Yegappan Lakshmanan
+    function! l:buffer_manager:detect_filetype(fname)
+        " Ignore the filetype autocommands
+        let old_eventignore = &eventignore
+        set eventignore=FileType
+        " Save the 'filetype', as this will be changed temporarily
+        let old_filetype = &filetype
+        " Run the filetypedetect group of autocommands to determine
+        " the filetype
+        exe 'doautocmd filetypedetect BufRead ' . a:fname
+        " Save the detected filetype
+        let ftype = &filetype
+        " Restore the previous state
+        let &filetype = old_filetype
+        let &eventignore = old_eventignore
+        return ftype
+    endfunction
+
+    return l:buffer_manager
+endfunction
+
+" 1}}}
+
+" Indexer {{{1
+" =============================================================================
+
+" create and return the an Indexer pseudo-object, which is a Catalog factory
+function! s:NewIndexer()
+
+    " create/clear
+    let l:indexer = {}
+
+    " set up filetype vocabulary
+    let l:indexer["filetype_term_map"] = {
+        \ "bib"         : '^@\w\+\s*{\s*\zs\S\{-}\ze\s*,',
+        \ "c"           : '^[[:alnum:]#].*',
+        \ "cpp"         : '^[[:alnum:]#].*',
+        \ "html"        : '\(<h\d.\{-}</h\d>\|<\(html\|head\|body\|div\|script\|a\s\+name=\).\{-}>\|<.\{-}\<id=.\{-}>\)',
+        \ "java"        : '^\s*\(\(package\|import\|private\|public\|protected\|void\|int\|boolean\)\s\+\|\u\).*',
+        \ "javascript"  : '^\(var\s\+.\{-}\|\s*\w\+\s*:\s*\S.\{-}[,{]\)\s*$',
+        \ "perl"        : '^\([$%@]\|\s*\(use\|sub\)\>\).*',
+        \ "php"         : '^\(\w\|\s*\(class\|function\|var\|require\w*\|include\w*\)\>\).*',
+        \ "python"      : '^\s*\(import\|class\|def\)\s\+[A-Za-z_]\i\+(.*',
+        \ "ruby"        : '\C^\(if\>\|\s*\(class\|module\|def\|require\|private\|public\|protected\|module_functon\|alias\|attr\(_reader\|_writer\|_accessor\)\?\)\>\|\s*[[:upper:]_]\+\s*=\).*',
+        \ "scheme"      : '^\s*(define.*',
+        \ "sh"          : '^\s*\(\(export\|function\|while\|case\|if\)\>\|\w\+\s*()\s*{\).*',
+        \ "tcl"         : '^\s*\(source\|proc\)\>.*',
+        \ "tex"         : '\C\\\(label\|\(sub\)*\(section\|paragraph\|part\)\)\>.*',
+        \ "vim"         : '\C^\(fu\%[nction]\|com\%[mand]\|if\|wh\%[ile]\)\>.*',
+        \ }
+    if exists("g:bdex_filetype_term_map")
+        call extend(l:indexer["filetype_term_map"], g:bdex_filetype_term_map)
+    endif
+
+    " set up element vocabulary
+    let l:indexer["element_term_map"] = {
+        \ "PyClass"     : '^\s*class\s\+[A-Za-z_]\i\+(.*',
+        \ "PyDef"  : '^\s*def\s\+[A-Za-z_]\i\+(.*',
+        \ }
+    if exists("g:bdex_element_term_map")
+        call extend(bdex_element_term_map, g:bdex_element_term_map)
+    endif
+
+    " Indexes all files given by the list `filepaths` for the regular
+    " expression(s) defined in the element vocabulary for `term_id`. If
+    " `term_id` is empty, the default filetype pattern is used. If
+    " `filepaths` is empty, then all
+    " listed buffers are indexed.
+    function! l:indexer.index_terms(filepaths, term_id) dict
+        let l:worklist = self.ensure_buffers(a:filepaths)
+
+        let l:desc = "Catalog of"
+        if !empty(a:term_id)
+            let l:desc .= "'" . a:term_id . "'"
+        endif
+        let l:desc .= " terms"
+        if empty(a:filepaths)
+            let l:desc .= " (in all buffers)"
+        elseif len(a:filepaths) == 1
+            let l:desc .= ' (in "' . expand(a:filepaths[0]) . '")'
+        else
+            let l:desc .= " (in multiple files)"
+        endif
+        let l:catalog = s:NewCatalog("term", l:desc)
+
+
+        for buf_ref in l:worklist
+            let l:pattern = self.get_buffer_term_pattern(buf_ref, a:term_id)
+            call l:catalog.map_buffer(buf_ref, l:pattern)
+        endfor
+        return l:catalog
+    endfunction
+
+    " Indexes all files given by the list `filepaths` for the regular
+    " expression given by `pattern`. If `filepaths` is empty, then all
+    " listed buffers are indexed.
+    function! l:indexer.index_pattern(filepaths, pattern) dict
+        let l:worklist = self.ensure_buffers(a:filepaths)
+
+        let l:desc = "Catalog of pattern '" . a:pattern . "'"
+        if empty(a:filepaths)
+            let l:desc .= " (in all buffers)"
+        elseif len(a:filepaths) == 1
+            let l:desc .= ' (in "' . a:filepaths[0] . '")'
+        else
+            let l:desc .= " (in multiple files)"
+        endif
+        let l:catalog = s:NewCatalog("pattern", l:desc)
+
+
+        for buf_ref in l:worklist
+            call l:catalog.map_buffer(buf_ref, a:pattern)
+        endfor
+        return l:catalog
+    endfunction
+
+    " returns pattern to be used when indexing terms for a particular buffer
+    function! l:indexer.get_buffer_term_pattern(buf_num, term_id) dict
+        let l:pattern = ""
+        if !empty(a:term_id)
+            try
+                let l:term_id_matches = filter(keys(self.element_term_map),
+                            \ "v:val =~ '" . a:term_id . ".*'")
+            catch /E15:/
+                throw s:_bdex_messenger.format_exception("Invalid name: '" . a:term_id . "': ".v:exception)
+            endtry
+            if len(l:term_id_matches) > 1
+                throw s:_bdex_messenger.format_exception("Multiple matches for index pattern name starting with '".a:term_id."': ".join(l:term_id_matches, ", "))
+            elseif len(l:term_id_matches) == 0
+                throw s:_bdex_messenger.format_exception("Index pattern with name '" . a:term_id . "' not found")
+            end
+            let l:pattern = self.element_term_map[l:term_id_matches[0]]
+        else
+            let l:pattern = get(self.filetype_term_map, getbufvar(a:buf_num, "&filetype"), "")
+            if empty(l:pattern)
+                let l:pattern = '^\w.*'
+            endif
+        endif
+        return l:pattern
+    endfunction
+
+    " Given a list of buffer references, `buf_refs` this will ensure than
+    " all the files/buffers are loaded and return a list of the buffer names.
+    " If `buf_refs` is empty, then all listed buffers are loaded.
+    function! l:indexer.ensure_buffers(buf_refs)
+        let l:cur_pos = getpos(".")
+        let l:cur_buf_num = bufnr("%")
+        if empty(a:buf_refs)
+            let l:req_buf_list = s:_bdex_buffer_manager.get_buf_nums(0)
+        else
+            let l:req_buf_list = []
+            for l:buf_ref in a:buf_refs
+                if type(l:buf_ref) == type(0)
+                    let l:buf_num = l:buf_ref
+                else
+                    let l:buf_num = bufnr(l:buf_ref)
+                endif
+                call add(l:req_buf_list, l:buf_num)
+            endfor
+        endif
+        let l:work_list = []
+        for l:buf_num in l:req_buf_list
+            if !bufexists(l:buf_num)
+                throw s:_bdex_messenger.format_exception('Buffer does not exist: "' . l:buf_num . '"')
+            elseif !buflisted(l:buf_num)
+                call s:_bdex_messenger.send_warning('Skipping unlisted buffer: [' . l:buf_num . '] "' . bufname(l:buf_num) . '"')
+            elseif !empty(getbufvar(l:buf_num, "is_bdex_buffer"))
+                call s:_bdex_messenger.send_warning('Skipping buffersaurus buffer: [' . l:buf_num . '] "' . bufname(l:buf_num) . '"')
+            else
+                call add(l:work_list, l:buf_num)
+                if !bufloaded(l:buf_num)
+                    execute("silent keepjumps keepalt buffer " . l:buf_num)
+                endif
+            endif
+        endfor
+        " execute("silent keepjumps keepalt e ".l:cur_buf_name)
+        execute("silent keepjumps keepalt buffer ".l:cur_buf_num)
+        call setpos(".", l:cur_pos)
+        return l:work_list
+    endfunction
+
+    return l:indexer
+
+endfunction
+
+" 1}}}
+
+"  Catalog {{{1
+" ==============================================================================
+
+" The main workhorse pseudo-object is created here ...
+function! s:NewCatalog(catalog_domain, catalog_desc)
+
+    " increment catalog counter, creating it if it does not already exist
+    if !exists("s:bdex_catalog_count")
+        let s:bdex_catalog_count = 1
+    else
+        let s:bdex_catalog_count += 1
+    endif
+
+    " initialize fields
+    let l:var_name = a:catalog_domain
+    let l:catalog = {
+                \ "catalog_id"          : s:bdex_catalog_count,
+                \ "catalog_domain"      : a:catalog_domain,
+                \ "catalog_desc"        : a:catalog_desc,
+                \ "show_context"        : exists("g:bdex_" . l:var_name . "_show_context") ? g:bdex_{l:var_name}_show_context : 0,
+                \ "context_size"        : exists("g:bdex_" . l:var_name . "_context_size") ? g:bdex_{l:var_name}_context_size : [0, 5],
+                \ "search_profile"      : [],
+                \ "matched_lines"       : [],
+                \ "search_history"      : [],
+                \ "searched_files"      : {},
+                \ "last_search_time"    : 0,
+                \ "last_search_hits"    : 0,
+                \ "entry_indexes"          : [],
+                \ "entry_labels"    : {},
+                \ "last_compile_time"   : 0,
+                \ "sort_regime"         : 'fl',
+                \}
+
+    " sets the display context
+    function! l:catalog.set_context_size(...) dict
+        let l:context = self.context_size
+        for l:carg in range(a:0)
+            if a:000[l:carg] == ""
+                return
+            endif
+            if a:000[l:carg] =~ '\d\+'
+                let l:context[0] = str2nr(a:000[l:carg])
+                let l:context[1] = str2nr(a:000[l:carg])
+            elseif a:000[l:carg] =~ '-\d\+'
+                let l:context[0] = str2nr(a:000[l:carg][1:])
+            elseif a:000[l:carg] =! '+\d\+'
+                let l:context[1] = str2nr(a:000[l:carg][1:])
+            else
+                call s:_bdex_messenger.send_error("Invalid argument ".l:carg.": ".a:000[l:carg])
+                return
+            endif
+        endfor
+        let self.context_size = l:context
+        return self.context_size
+    endfunction
+
+    " determine whether or not context should be shown
+    function! l:catalog.is_show_context() dict
+        if !self.show_context
+            return 0
+        else
+            if self.context_size[0] == 0 && self.context_size[1] == 0
+                return 0
+            else
+                return 1
+            endif
+        endif
+    endfunction
+
+    " clears all items
+    function! l:catalog.clear() dict
+        let self.matched_lines = []
+        let self.search_history = []
+        let self.searched_files = {}
+        let self.last_search_time = 0
+        let self.last_search_hits = 0
+        let self.entry_indexes = []
+        let self.entry_labels = {}
+        let self.last_compile_time = 0
+    endfunction
+
+    " number of entries in the catalog
+    function! l:catalog.size() dict
+        return len(self.matched_lines)
+    endfunction
+
+    " carry out search given in the search profile
+    function l:catalog.build(...) dict
+        call self.clear()
+        if a:0 >= 1
+            let self.search_profile = a:1
+        endif
+        for l:search in self.search_profile
+            call self.map_buffer(l:search.filepath, l:search.pattern)
+        endfor
+    endfunction
+
+    " repeat last search
+    function l:catalog.rebuild() dict
+        if empty(self.search_history)
+            raise s:_bdex_messenger.format_exception("Search history is empty")
+        endif
+        let self.search_profile = []
+        for search in self.search_history
+            call add(self.search_profile, search)
+        endfor
+        call self.clear()
+        call self.build()
+        call self.compile_entry_indexes()
+    endfunction
+
+    " index all occurrences of `pattern` in buffer `buf_ref`
+    function! l:catalog.map_buffer(buf_ref, pattern) dict
+        if type(a:buf_ref) == type(0)
+            let l:buf_num = a:buf_ref
+            let l:buf_name = bufname(l:buf_num)
+        else
+            let l:buf_name = expand(a:buf_ref)
+            let l:buf_num = bufnr(l:buf_name) + 0
+        endif
+        let l:filepath = fnamemodify(expand(l:buf_name), ":p")
+        let l:buf_search_log = {
+                    \ "buf_name" : l:buf_name,
+                    \ 'buf_num': l:buf_num,
+                    \ "filepath" : l:filepath,
+                    \ "pattern" : a:pattern,
+                    \ "num_lines_searched" : 0,
+                    \ "num_lines_matched" : 0,
+                    \ "last_searched" : 0,
+                    \ }
+        let self.last_search_hits = 0
+        let l:lnum = 1
+        while 1
+            let l:buf_lines = getbufline(l:buf_num, l:lnum)
+            if empty(l:buf_lines)
+                break
+            endif
+            let l:pos = match(l:buf_lines[0], a:pattern)
+            let l:buf_search_log["num_lines_searched"] += 1
+            if l:pos >= 0
+                let self.last_search_hits += 1
+                let l:search_order = len(self.matched_lines) + 1
+                call add(self.matched_lines, {
+                            \ 'buf_name': l:buf_name,
+                            \ 'buf_num': l:buf_num,
+                            \ 'filepath' : l:filepath,
+                            \ 'lnum': l:lnum,
+                            \ 'col': l:pos + 1,
+                            \ 'sort_text' : substitute(l:buf_lines[0], '^\s*', '', 'g'),
+                            \ 'search_order' : l:search_order,
+                            \ 'entry_label' : string(l:search_order),
+                            \ })
+                let l:buf_search_log["num_lines_matched"] += 1
+            endif
+            let l:lnum += 1
+        endwhile
+        let l:buf_search_log["last_searched"] = localtime()
+        let self.last_search_time = l:buf_search_log["last_searched"]
+        call add(self.search_history, l:buf_search_log)
+        if has_key(self.searched_files, l:filepath)
+            let self.searched_files[l:filepath] += self.last_search_hits
+        else
+            let self.searched_files[l:filepath] = self.last_search_hits
+        endif
+    endfunction
+
+    " open the catalog for viewing
+    function! l:catalog.open() dict
+        if !has_key(self, "catalog_viewer") || empty(self.catalog_viewer)
+            let self["catalog_viewer"] = s:NewCatalogViewer(self, self.catalog_desc)
+        endif
+        call self.catalog_viewer.open()
+        return self.catalog_viewer
+    endfunction
+
+    " returns indexes of matched lines, compiling them if
+    " needed
+    function! l:catalog.get_index_groups() dict
+        if self.last_compile_time < self.last_search_time
+            call self.compile_entry_indexes()
+        endif
+        return self.entry_indexes
+    endfunction
+
+    " returns true if sort regime dictates that indexes are grouped
+    function! l:catalog.is_sort_grouped() dict
+        if self.sort_regime == 'a'
+            return 0
+        else
+            return 1
+        endif
+    endfunction
+
+    " apply a sort regime
+    function! l:catalog.apply_sort(regime) dict
+        if index(s:bdex_catalog_sort_regimes, a:regime) == - 1
+            throw s:_bdex_messenger.format_exception("Unrecognized sort regime: '" . a:regime . "'")
+        endif
+        let self.sort_regime = a:regime
+        return self.compile_entry_indexes()
+    endfunction
+
+    " cycle through sort regimes
+    function! l:catalog.cycle_sort_regime() dict
+        let l:cur_regime = index(s:bdex_catalog_sort_regimes, self.sort_regime)
+        let l:cur_regime += 1
+        if l:cur_regime < 0 || l:cur_regime >= len(s:bdex_catalog_sort_regimes)
+            let self.sort_regime = s:bdex_catalog_sort_regimes[0]
+        else
+            let self.sort_regime = s:bdex_catalog_sort_regimes[l:cur_regime]
+        endif
+        return self.compile_entry_indexes()
+    endfunction
+
+    " compiles matches into index
+    function! l:catalog.compile_entry_indexes() dict
+        let self.entry_indexes = []
+        let self.entry_labels = {}
+        if self.sort_regime == 'fl'
+            call sort(self.matched_lines, "s:compare_matched_lines_fl")
+        elseif self.sort_regime == 'fa'
+            call sort(self.matched_lines, "s:compare_matched_lines_fa")
+        elseif self.sort_regime == 'a'
+            call sort(self.matched_lines, "s:compare_matched_lines_a")
+        else
+            throw s:_bdex_messenger.format_exception("Unrecognized sort regime: '" . self.sort_regime . "'")
+        endif
+        if self.sort_regime == 'a'
+            call add(self.entry_indexes, ['', []])
+            for l:matched_line_idx in range(0, len(self.matched_lines) - 1)
+                call add(self.entry_indexes[-1][1], l:matched_line_idx)
+                let self.entry_labels[l:matched_line_idx] = self.matched_lines[l:matched_line_idx].entry_label
+            endfor
+        else
+            let l:cur_group = ""
+            for l:matched_line_idx in range(0, len(self.matched_lines) - 1)
+                if self.matched_lines[l:matched_line_idx].filepath != l:cur_group
+                    let l:cur_group = self.matched_lines[l:matched_line_idx].filepath
+                    call add(self.entry_indexes, [l:cur_group, []])
+                endif
+                call add(self.entry_indexes[-1][1], l:matched_line_idx)
+                let self.entry_labels[l:matched_line_idx] = self.matched_lines[l:matched_line_idx].entry_label
+            endfor
+        endif
+        let self.last_compile_time = localtime()
+        return self.entry_indexes
+    endfunction
+
+    " Describes catalog status.
+    function! l:catalog.describe() dict
+        call s:_bdex_messenger.send_info(self.format_status_message() . " (sorted " . self.format_sort_status() . ")")
+    endfunction
+
+    " Describes catalog status in detail.
+    function! l:catalog.describe_detail() dict
+        echon self.format_status_message() . ":\n"
+        let l:rows = []
+        let l:header = self.format_describe_detail_row([
+                    \ "#",
+                    \ "File",
+                    \ "Found",
+                    \ "Total",
+                    \ "Pattern",
+                    \])
+        call add(l:rows, l:header)
+        for search_log in self.search_history
+            let l:row = self.format_describe_detail_row([
+                        \ bufnr(search_log.filepath),
+                        \ bufname(search_log.filepath),
+                        \ string(search_log.num_lines_matched),
+                        \ string(search_log.num_lines_searched),
+                        \ search_log.pattern,
+                        \])
+            call add(l:rows, row)
+        endfor
+        echon join(l:rows, "\n")
+    endfunction
+
+    " Formats a single row in the detail catalog description
+    function! l:catalog.format_describe_detail_row(fields)
+        let l:row = join([
+                    \ s:Format_Fill(a:fields[0], 3, 2, 1),
+                    \ s:Format_Fill(a:fields[1], ((&columns - 14) / 3), -1, -1),
+                    \ s:Format_Fill(a:fields[2], 6, 1, 0),
+                    \ s:Format_Fill(a:fields[3], 6, 1, 0),
+                    \ a:fields[4],
+                    \ ], "  ")
+        return l:row
+    endfunction
+
+    " Composes message indicating size of catalog.
+    function! l:catalog.format_status_message() dict
+        let l:message = ""
+        let l:catalog_size = self.size()
+        let l:num_searched_files = len(self.searched_files)
+        if l:catalog_size == 0
+            let l:message .= "no entries"
+        elseif l:catalog_size == 1
+            let l:message .= "1 entry"
+        else
+            let l:message .= l:catalog_size . " entries"
+        endif
+        let l:message .= " in "
+        if l:num_searched_files == 0
+            let l:message .= "no files"
+        elseif l:num_searched_files == 1
+            let l:message .= "1 file"
+        else
+            let l:message .= l:num_searched_files . " files"
+        endif
+        return l:message
+    endfunction
+
+    " Composes message indicating sort regime of catalog.
+    function! l:catalog.format_sort_status() dict
+        let l:message = get(s:bdex_catalog_sort_regime_desc, self.sort_regime, ["??", "in unspecified order"])[1]
+        return l:message
+    endfunction
+
+    " return pseudo-object
+    return l:catalog
+
+endfunction
+
+" comparison function used for sorting matched lines: sort first by
+" filepath, then by line number
+function! s:compare_matched_lines_fl(m1, m2)
+    if a:m1.filepath < a:m2.filepath
+        return -1
+    elseif a:m1.filepath > a:m2.filepath
+        return 1
+    else
+        if a:m1.lnum < a:m2.lnum
+            return -1
+        elseif a:m1.lnum > a:m2.lnum
+            return 1
+        else
+            return 0
+        endif
+    endif
+endfunction
+
+" comparison function used for sorting matched lines: sort first by
+" filepath, then by text
+function! s:compare_matched_lines_fa(m1, m2)
+    if a:m1.filepath < a:m2.filepath
+        return -1
+    elseif a:m1.filepath > a:m2.filepath
+        return 1
+    else
+        return s:compare_matched_lines_a(a:m1, a:m2)
+    endif
+endfunction
+
+" comparison function used for sorting matched lines: sort by
+" text
+function! s:compare_matched_lines_a(m1, m2)
+    if a:m1.sort_text < a:m2.sort_text
+        return -1
+    elseif a:m1.sort_text > a:m2.sort_text
+        return 1
+    else
+        return 0
+    endif
+endfunction
+
+" 1}}}
+
+" CatalogViewer {{{1
+" ==============================================================================
+
+" Display the catalog.
+function! s:NewCatalogViewer(catalog, desc, ...)
+
+    " abort if catalog is empty
+    " if len(a:catalog.matched_lines) == 0
+    "     throw s:_bdex_messenger.format_exception("CatalogViewer() called on empty catalog")
+    " endif
+
+    " initialize
+    let l:catalog_viewer = {}
+
+    " Initialize object state.
+    let l:catalog_viewer["catalog"] = a:catalog
+    let l:catalog_viewer["description"] = a:desc
+    let l:catalog_viewer["buf_num"] = -1
+    let l:catalog_viewer["buf_name"] = "[[buffersaurus]]"
+    let l:catalog_viewer["title"] = "buffersaurus"
+    let l:bdex_bufs = s:_bdex_buffer_manager.find_buffers_with_var("is_bdex_buffer", 1)
+    if len(l:bdex_bufs) > 0
+        let l:catalog_viewer["buf_num"] = l:bdex_bufs[0]
+    endif
+    let l:catalog_viewer["jump_map"] = {}
+    let l:catalog_viewer["win_num"] = 0
+
+    " Opens the buffer for viewing, creating it if needed. If non-empty first
+    " argument is given, forces re-rendering of buffer.
+    function! l:catalog_viewer.open(...) dict
+        " get buffer number of the catalog view buffer, creating it if neccessary
+        if self.buf_num < 0 || !bufexists(self.buf_num)
+            " create and render a new buffer
+            call self.create_buffer()
+        else
+            " buffer exists: activate a viewport on it according to the
+            " spawning mode, re-rendering the buffer with the catalog if needed
+            call self.activate_viewport()
+            if b:bdex_last_render_time < self.catalog.last_search_time || (a:0 > 0 && a:1) || b:bdex_catalog_viewer != self
+                call self.render_buffer()
+            endif
+        endif
+    endfunction
+
+    " Creates a new buffer, renders and opens it.
+    function! l:catalog_viewer.create_buffer() dict
+        " get a new buf reference
+        let self.buf_num = bufnr(self.buf_name, 1)
+        " get a viewport onto it
+        call self.activate_viewport()
+        " initialize it (includes "claiming" it)
+        call self.initialize_buffer()
+        " render it
+        call self.render_buffer()
+    endfunction
+
+    " Opens a viewport on the buffer according, creating it if neccessary
+    " according to the spawn mode. Valid buffer number must already have been
+    " obtained before this is called.
+    function! l:catalog_viewer.activate_viewport() dict
+        let l:bfwn = bufwinnr(self.buf_num)
+        if l:bfwn == winnr()
+            " viewport wth buffer already active and current
+            return
+        elseif l:bfwn >= 0
+            " viewport with buffer exists, but not current
+            execute(l:bfwn . " wincmd w")
+        else
+            " create viewport
+            execute("silent keepalt keepjumps " . s:_bdex_buffer_manager.get_split_mode() . " " . self.buf_num)
+        endif
+    endfunction
+
+    " Sets up buffer environment.
+    function! l:catalog_viewer.initialize_buffer() dict
+        call self.claim_buffer()
+        call self.setup_buffer_opts()
+        call self.setup_buffer_syntax()
+        call self.setup_buffer_commands()
+        call self.setup_buffer_keymaps()
+        call self.setup_buffer_folding()
+        call self.setup_buffer_statusline()
+    endfunction
+
+    " 'Claims' a buffer by setting it to point at self.
+    function! l:catalog_viewer.claim_buffer() dict
+        call setbufvar("%", "is_bdex_buffer", 1)
+        call setbufvar("%", "bdex_catalog_domain", self.catalog.catalog_domain)
+        call setbufvar("%", "bdex_catalog_viewer", self)
+        call setbufvar("%", "bdex_last_render_time", 0)
+        call setbufvar("%", "bdex_cur_line", 0)
+    endfunction
+
+    " 'Unclaims' a buffer by stripping all buffersaurus vars
+    function! l:catalog_viewer.unclaim_buffer() dict
+        for l:var in ["is_bdex_buffer",
+                    \ "bdex_catalog_domain",
+                    \ "bdex_catalog_viewer",
+                    \ "bdex_last_render_time",
+                    \ "bdex_cur_line"
+                    \ ]
+            if exists("b:" . l:var)
+                unlet b:{l:var}
+            endif
+        endfor
+    endfunction
+
+    " Sets buffer options.
+    function! l:catalog_viewer.setup_buffer_opts() dict
+        setlocal buftype=nofile
+        setlocal noswapfile
+        setlocal nowrap
+        set bufhidden=hide
+        setlocal nobuflisted
+        setlocal nolist
+        setlocal noinsertmode
+        setlocal number
+        " setlocal nonumber
+        setlocal cursorline
+        setlocal nospell
+    endfunction
+
+    " Sets buffer syntax.
+    function! l:catalog_viewer.setup_buffer_syntax() dict
+        if has("syntax")
+            syntax clear
+            if self.catalog.is_show_context()
+                syn region BdexSyntaxFileGroup       matchgroup=BdexSyntaxFileGroupTitle start='^[^ ]'   keepend       end='\(^[^ ]\)\@=' fold
+                syn region BdexSyntaxContextedEntry  start='^  \['  end='\(^  \[\|^[^ ]\)\@=' fold containedin=BdexSyntaxFileGroup
+                syn region BdexSyntaxContextedKeyRow start='^  \[\s\{-}.\{-1,}\s\{-}\]' keepend oneline end='$' containedin=BdexSyntaxContextedEntry
+                syn region BdexSyntaxContextLines    start='^  \s*\d\+ :'  oneline end='$' containedin=BdexSyntaxContextedEntry
+                syn region BdexSyntaxMatchedLines    start='^  \s*\d\+ >'  oneline end='$'  containedin=BdexSyntaxContextedEntry
+
+                syn match BdexSyntaxFileGroupTitle            ':: .\+ :::'                          containedin=BdexSyntaxFileGroup
+                syn match BdexSyntaxKey                       '^  \zs\[\s\{-}.\{-1,}\s\{-}\]\ze'    containedin=BdexSyntaxcOntextedKeyRow
+                syn match BdexSyntaxContextedKeyFilename      '  \zs".\+"\ze, L\d\+-\d\+:'          containedin=BdexSyntaxContextedKeyRow
+                syn match BdexSyntaxContextedKeyLines         ', \zsL\d\+-\d\+\ze:'                 containedin=BdexSyntaxContextedKeyRow
+                syn match BdexSyntaxContextedKeyDesc          ': .*$'                               containedin=BdexSyntaxContextedKeyRow
+
+                syn match BdexSyntaxContextLineNum            '^  \zs\s*\d\+\s*\ze:'                containedin=BdexSyntaxContextLines
+                syn match BdexSyntaxContextLineText           ': \zs.*\ze'                          containedin=BdexSyntaxContextLines
+
+                syn match BdexSyntaxMatchedLineNum            '^  \zs\s*\d\+\s*\ze>'                containedin=BdexSyntaxMatchedLines
+                syn match BdexSyntaxMatchedLineText           '> \zs.*\ze'                          containedin=BdexSyntaxMatchedLines
+            else
+                syn match BdexSyntaxFileGroupTitle             '^\zs::: .* :::\ze.*$'                   nextgroup=BdexSyntaxKey
+                syn match BdexSyntaxKey                        '^  \zs\[\s\{-}.\{-1,}\s\{-}\]\ze'       nextgroup=BdexSyntaxUncontextedLineNum
+                syn match BdexSyntaxUncontextedLineNum         '\s\+\s*\zs\d\+\ze:'                nextgroup=BdexSyntaxUncontextedLineText
+            endif
+            highlight! link BdexSyntaxFileGroupTitle       Title
+            highlight! link BdexSyntaxKey                  Identifier
+            highlight! link BdexSyntaxContextedKeyFilename Comment
+            highlight! link BdexSyntaxContextedKeyLines    Comment
+            highlight! link BdexSyntaxContextedKeyDesc     Comment
+            highlight! link BdexSyntaxContextLineNum       Normal
+            highlight! link BdexSyntaxContextLineText      Normal
+            highlight! link BdexSyntaxMatchedLineNum       Question
+            highlight! link BdexSyntaxMatchedLineText      Question
+            highlight! link BdexSyntaxUncontextedLineNum   Question
+            highlight! link BdexSyntaxUncontextedLineText  Normal
+        endif
+    endfunction
+
+    " Sets buffer commands.
+    function! l:catalog_viewer.setup_buffer_commands() dict
+        augroup BdexCatalogViewer
+            au!
+            autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,BufEnter,BufLeave <buffer> call b:bdex_catalog_viewer.highlight_current_line()
+            autocmd BufLeave <buffer> let s:_bdex_last_catalog_viewed = b:bdex_catalog_viewer
+        augroup END
+    endfunction
+
+    " Sets buffer key maps.
+    function! l:catalog_viewer.setup_buffer_keymaps() dict
+
+        """" Index buffer management
+        noremap <buffer> <silent> c       :call b:bdex_catalog_viewer.toggle_context()<CR>
+        noremap <buffer> <silent> s       :call b:bdex_catalog_viewer.cycle_sort_regime()<CR>
+        noremap <buffer> <silent> u       :call b:bdex_catalog_viewer.rebuild_catalog()<CR>
+        noremap <buffer> <silent> <C-G>   :call b:bdex_catalog_viewer.catalog.describe()<CR>
+        noremap <buffer> <silent> g<C-G>  :call b:bdex_catalog_viewer.catalog.describe_detail()<CR>
+        noremap <buffer> <silent> q       :call b:bdex_catalog_viewer.quit_view()<CR>
+
+        """" Movement within buffer
+
+        " by line
+        noremap <buffer> <silent> j  j^
+        noremap <buffer> <silent> k  k^
+
+        " jump to next/prev key entry
+        noremap <buffer> <silent> <C-N>  :call b:bdex_catalog_viewer.goto_index_entry("n", 0, 1)<CR>
+        noremap <buffer> <silent> <C-P>  :call b:bdex_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
+
+        " jump to next/prev file entry`
+        noremap <buffer> <silent> f      :call b:bdex_catalog_viewer.goto_file_start("n", 0, 1)<CR>
+        noremap <buffer> <silent> F      :call b:bdex_catalog_viewer.goto_file_start("p", 0, 1)<CR>
+
+        """" Movement within buffer that updates the other window
+
+        " show target line in other window, keeping catalog open and in focus
+        noremap <buffer> <silent> <SPACE> :call b:bdex_catalog_viewer.visit_target(1, 1, "")<CR>
+        noremap <buffer> <silent> i       :call b:bdex_catalog_viewer.visit_target(1, 1, "")<CR>
+        noremap <buffer> <silent> t       :call b:bdex_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
+        noremap <buffer> <silent> T       :call b:bdex_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+
+        """" Movement that moves to the search target
+
+        " go to target line in other window, keeping catalog open
+        noremap <buffer> <silent> <CR>  :call b:bdex_catalog_viewer.visit_target(1, 0, "")<CR>
+        noremap <buffer> <silent> o     :call b:bdex_catalog_viewer.visit_target(1, 0, "")<CR>
+        noremap <buffer> <silent> ws    :call b:bdex_catalog_viewer.visit_target(1, 0, "sb")<CR>
+        noremap <buffer> <silent> wv    :call b:bdex_catalog_viewer.visit_target(1, 0, "vert sb")<CR>
+
+        " open target line in other window, closing catalog
+        noremap <buffer> <silent> O     :call b:bdex_catalog_viewer.visit_target(0, 0, "")<CR>
+        noremap <buffer> <silent> wS    :call b:bdex_catalog_viewer.visit_target(0, 0, "sb")<CR>
+        noremap <buffer> <silent> wV    :call b:bdex_catalog_viewer.visit_target(0, 0, "vert sb")<CR>
+
+    endfunction
+
+    " Sets buffer folding.
+    function! l:catalog_viewer.setup_buffer_folding() dict
+        if has("folding")
+            "setlocal foldcolumn=3
+            setlocal foldmethod=syntax
+            setlocal foldlevel=3
+            setlocal foldenable
+            setlocal foldtext=BdexFoldText()
+            " setlocal fillchars=fold:\ "
+            setlocal fillchars=fold:.
+        endif
+    endfunction
+
+    " Sets buffer status line.
+    function! l:catalog_viewer.setup_buffer_statusline() dict
+        setlocal statusline=%{BdexStatusLineCurrentLineInfo()}%<%=\|%{BdexStatusLineSortRegime()}"
+    endfunction
+
+    " Populates the buffer with the catalog index.
+    function! l:catalog_viewer.render_buffer() dict
+        setlocal modifiable
+        call self.claim_buffer()
+        call self.clear_buffer()
+        let self.jump_map = {}
+        let l:show_context = self.catalog.is_show_context()
+        let l:context_size = self.catalog.context_size
+        call self.setup_buffer_syntax()
+        let l:catalog_index_groups = self.catalog.get_index_groups()
+        let prev_entry_index_group_label = ''
+        for l:entry_index_group in l:catalog_index_groups
+            let [l:entry_index_group_label, l:entry_indexes] = l:entry_index_group
+            if prev_entry_index_group_label != l:entry_index_group_label
+                call self.append_line('::: ' . l:entry_index_group_label . ' :::',
+                            \ -1,
+                            \ self.catalog.matched_lines[l:entry_indexes[0]].buf_num,
+                            \ 1,
+                            \ 1,
+                            \ {"proxy_entry_index": l:entry_indexes[0]})
+            endif
+            for l:entry_index in l:entry_indexes
+                if self.catalog.is_show_context()
+                    call self.render_contexted_entry(l:entry_index, self.catalog.matched_lines[l:entry_index], l:context_size)
+                else
+                    call self.render_uncontexted_entry(l:entry_index, self.catalog.matched_lines[l:entry_index])
+                endif
+            endfor
+        endfor
+        let b:bdex_last_render_time = localtime()
+        setlocal nomodifiable
+        call cursor(1, 1)
+        call self.goto_index_entry("n", 0, 1)
+    endfunction
+
+    " Renders contexted entry.
+    function! l:catalog_viewer.render_contexted_entry(index, entry, context_size) dict
+        let l:lnum = a:entry.lnum
+        let l:buf_num = a:entry.buf_num
+        let l:col = a:entry.col
+        let l:buf_name = a:entry.buf_name
+        let l:ln1 = max([1, l:lnum - a:context_size[0]])
+        let l:ln2 = l:lnum + a:context_size[1]
+        let l:src_lines = self.fetch_buf_lines(l:buf_num, l:ln1, l:ln2)
+        let l:indexed_line_summary = substitute(self.fetch_buf_line(l:buf_num, l:lnum), '^\s*', '', 'g')
+        let l:index_row = self.render_entry_index(a:index) . ' "' . l:buf_name . '", L' . l:ln1 . '-' . l:ln2 . ": " . l:indexed_line_summary
+        call self.append_line(l:index_row, a:index, l:buf_num, l:lnum, l:col)
+        for l:lnx in range(0, len(l:src_lines)-1)
+            let l:src_lnum = l:lnx + l:ln1
+            let l:rendered = "  "
+            " let l:rendered .= repeat(" ", s:bdex_entry_label_field_width + 1)
+            if l:src_lnum == l:lnum
+                let l:lborder = ">"
+                let l:rborder = ">"
+            else
+                let l:lborder = ":"
+                let l:rborder = ":"
+            endif
+            let l:rendered .= s:Format_AlignRight(l:src_lnum, s:bdex_lnum_field_width, " ") . " " . l:rborder
+            let l:rendered .= " ".l:src_lines[l:lnx]
+            call self.append_line(l:rendered, a:index, l:buf_num, l:src_lnum, l:col)
+        endfor
+    endfunction
+
+    " Renders an uncontexted entry.
+    function! l:catalog_viewer.render_uncontexted_entry(index, entry) dict
+        let l:index_field = self.render_entry_index(a:index)
+        let l:lnum_field = s:Format_AlignRight(a:entry.lnum, 14 - len(l:index_field), " ")
+        let l:rendered_line = "" . l:index_field . " ".l:lnum_field . ":   " . getbufline(a:entry.buf_num, a:entry.lnum)[0]
+        call self.append_line(l:rendered_line, a:index, a:entry.buf_num, a:entry.lnum, a:entry.col)
+    endfunction
+
+    " Renders the index.
+    function! l:catalog_viewer.render_entry_index(index) dict
+        return "  [" . get(self.catalog.entry_labels, a:index, string(a:index)) . "] "
+    endfunction
+
+    " Appends a line to the buffer and registers it in the line log.
+    function! l:catalog_viewer.append_line(text, entry_index, jump_to_buf_num, jump_to_lnum, jump_to_col, ...) dict
+        let l:line_map = {
+                    \ "entry_index" : a:entry_index,
+                    \ "entry_label" : get(self.catalog.entry_labels, a:entry_index, string(a:entry_index)),
+                    \ "target" : [a:jump_to_buf_num, a:jump_to_lnum, a:jump_to_col, 0],
+                    \ }
+        if a:0 > 0
+            call extend(l:line_map, a:1)
+        endif
+        let self.jump_map[line("$")] = l:line_map
+        call append(line("$")-1, a:text)
+    endfunction
+
+    " Close and quit the viewer.
+    function! l:catalog_viewer.quit_view() dict
+        execute("bwipe " . self.buf_num)
+    endfunction
+
+    function! l:catalog_viewer.highlight_current_line()
+        " if line(".") != b:bdex_cur_line
+            let l:prev_line = b:bdex_cur_line
+            let b:bdex_cur_line = line(".")
+            3match none
+            exec '3match Search /^\%'. b:bdex_cur_line .'l.*/'
+        " endif
+    endfunction
+
+    " Clears the buffer contents.
+    function! l:catalog_viewer.clear_buffer() dict
+        call cursor(1, 1)
+        exec 'silent! normal! "_dG'
+    endfunction
+
+    " Returns a string corresponding to line `ln1` from buffer ``buf``.
+    " If the line is unavailable, then "#INVALID#LINE#" is returned.
+    function! l:catalog_viewer.fetch_buf_line(buf, ln1)
+        let l:lines = getbufline(a:buf, a:ln1)
+        if len(l:lines) > 0
+            return l:lines[0]
+        else
+            return "#INVALID#LINE#"
+        endif
+    endfunction
+
+    " Returns a list of strings corresponding to the contents of lines from
+    " `ln1` to `ln2` from buffer `buf`. If lines are not available, returns a
+    " list with (ln2-ln1+1) elements consisting of copies of the string
+    " "#INVALID LINE#".
+    function! l:catalog_viewer.fetch_buf_lines(buf, ln1, ln2)
+        let l:lines = getbufline(a:buf, a:ln1, a:ln2)
+        if len(l:lines) > 0
+            return l:lines
+        else
+            let l:lines = []
+            for l:idx in range(a:ln1, a:ln2)
+                call add(l:lines, "#INVALID#LINE#")
+            endfor
+            return l:lines
+        endif
+    endfunction
+
+    " Visits the specified buffer in the previous window, if it is already
+    " visible there. If not, then it looks for the first window with the
+    " buffer showing and visits it there. If no windows are showing the
+    " buffer, ... ?
+    function! l:catalog_viewer.visit_buffer(buf_num, use_previous_window, split_cmd) dict
+        if winbufnr(winnr("#")) == a:buf_num || a:use_previous_window
+            execute("wincmd p")
+        else
+            throw s:_bdex_messenger.format_exception("Not implemented!")
+        endif
+        let l:old_switch_buf = &switchbuf
+        if empty(a:split_cmd)
+            let &switchbuf="useopen"
+            execute("silent keepalt keepjumps buffer " . a:buf_num)
+        else
+            let &switchbuf="split"
+            execute("silent keepalt keepjumps " . a:split_cmd . " " . a:buf_num)
+        endif
+        let &switchbuf=l:old_switch_buf
+    endfunction
+
+    " Go to the line mapped to by the current line/index of the catalog
+    " viewer.
+    function! l:catalog_viewer.visit_target(keep_catalog, refocus_catalog, split_cmd) dict
+        let l:cur_line = line(".")
+        if !has_key(l:self.jump_map, l:cur_line)
+            call s:_bdex_messenger.send_info("Not a valid navigation line")
+            return 0
+        endif
+        let [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy] = self.jump_map[l:cur_line].target
+        if !a:keep_catalog
+            call self.quit_view()
+        endif
+        call self.visit_buffer(l:jump_to_buf_num, 1, a:split_cmd)
+        call setpos('.', [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy])
+        execute(s:bdex_post_move_cmd)
+        if a:keep_catalog && a:refocus_catalog
+            execute("wincmd p")
+        endif
+        let l:report = ""
+        if self.jump_map[l:cur_line].entry_index >= 0
+            let l:report .= "(" . string(self.jump_map[l:cur_line].entry_index + 1). " of " . self.catalog.size() . "): "
+            let l:report .= '"' . expand(bufname(l:jump_to_buf_num)) . '", Line ' . l:jump_to_lnum
+        else
+            let l:report .= 'File: "'  . expand(bufname(l:jump_to_buf_num)) . '"'
+        endif
+
+        call s:_bdex_messenger.send_info(l:report)
+    endfunction
+
+    " Finds next line with occurrence of a rendered index
+    function! l:catalog_viewer.goto_index_entry(direction, visit_target, refocus_catalog) dict
+        let l:ok = self.goto_pattern("^  \[", a:direction)
+        execute("normal! zz")
+        if l:ok && a:visit_target
+            call self.visit_target(1, a:refocus_catalog, "")
+        endif
+    endfunction
+
+    " Finds next line with occurrence of a file pattern.
+    function! l:catalog_viewer.goto_file_start(direction, visit_target, refocus_catalog) dict
+        let l:ok = self.goto_pattern("^:::", a:direction)
+        execute("normal! zz")
+        if l:ok && a:visit_target
+            call self.visit_target(1, a:refocus_catalog, "")
+        endif
+    endfunction
+
+    " Finds next occurrence of specified pattern.
+    function! l:catalog_viewer.goto_pattern(pattern, direction) dict
+        if a:direction == "b" || a:direction == "p"
+            let l:flags = "b"
+            " call cursor(line(".")-1, 0)
+        else
+            let l:flags = ""
+            " call cursor(line(".")+1, 0)
+        endif
+        if g:bdex_move_wrap
+            let l:flags .= "W"
+        else
+            let l:flags .= "w"
+        endif
+        let l:flags .= "e"
+        let l:lnum = search(a:pattern, l:flags)
+        if l:lnum < 0
+            if l:flags[0] == "b"
+                call s:_bdex_messenger.send_info("No previous results")
+            else
+                call s:_bdex_messenger.send_info("No more results")
+            endif
+            return 0
+        else
+            return 1
+        endif
+    endfunction
+
+    " Toggles context on/off.
+    function! l:catalog_viewer.toggle_context() dict
+        let self.catalog.show_context = !self.catalog.show_context
+        let l:line = line(".")
+        if has_key(b:bdex_catalog_viewer.jump_map, l:line)
+            let l:jump_line = b:bdex_catalog_viewer.jump_map[l:line]
+            if l:jump_line.entry_index > 0
+                let l:entry_index = l:jump_line.entry_index
+            elseif has_key(l:jump_line, "proxy_key")
+                let l:entry_index = l:jump_line.proxy_key
+            else
+                let l:entry_index = ""
+            endif
+        else
+            let l:entry_index = ""
+        endif
+        call self.open(1)
+        if !empty(l:entry_index)
+            let l:rendered_entry_index = self.render_entry_index(l:entry_index)
+            let l:lnum = search('^'.escape(l:rendered_entry_index, '[]'), "e")
+            if l:lnum > 0
+                call setpos(".", [bufnr("%"), l:lnum, 0, 0])
+                execute("normal! zz")
+            endif
+        endif
+    endfunction
+
+    " Cycles sort regime.
+    function! l:catalog_viewer.cycle_sort_regime() dict
+        call self.catalog.cycle_sort_regime()
+        call self.open(1)
+        call s:_bdex_messenger.send_info("sorted " . self.catalog.format_sort_status())
+    endfunction
+
+    " Rebuilds catalog.
+    function! l:catalog_viewer.rebuild_catalog() dict
+        call self.catalog.rebuild()
+        call s:_bdex_messenger.send_info("updated index: found " . self.catalog.format_status_message())
+        call self.open(1)
+    endfunction
+
+    " return object
+    return l:catalog_viewer
+
+endfunction
+
+" 1}}}
+
+" Command Interface {{{1
+" =============================================================================
+
+function! s:ActivateCatalog(domain, catalog)
+    let s:_bdex_last_catalog_built = a:catalog
+    let s:_bdex_last_{a:domain}_catalog_built = a:catalog
+    let s:_bdex_last_catalog_viewed = a:catalog.open()
+    let s:_bdex_last_{a:domain}_catalog_viewed = s:_bdex_last_catalog_viewed
+    if a:catalog.size() > 0
+        call a:catalog.describe()
+    else
+        call s:_bdex_messenger.send_status("no matches")
+    endif
+endfunction
+
+function! <SID>IndexTerms(term_name, global)
+    if empty(a:global)
+        let l:worklist = ["%"]
+    else
+        let l:worklist = ""
+    endif
+    let l:catalog = s:_bdex_indexer.index_terms(l:worklist, a:term_name)
+    call s:ActivateCatalog("term", l:catalog)
+endfunction
+
+function! <SID>IndexPatterns(pattern, global)
+    if empty(a:global)
+        let l:worklist = ["%"]
+    else
+        let l:worklist = ""
+    endif
+    let l:catalog = s:_bdex_indexer.index_pattern(l:worklist, a:pattern)
+    call s:ActivateCatalog("pattern", l:catalog)
+endfunction
+
+function! <SID>GotoEntry(direction)
+    if !exists("s:_bdex_last_catalog_viewed") && !exists("s:_bdex_last_catalog_built")
+        call s:_bdex_messenger.send_error("No index available for viewing")
+        return
+    elseif exists("s:_bdex_last_catalog_viewed")
+        call s:_bdex_last_catalog_viewed.open()
+    elseif exists("s:_bdex_last_catalog_built")
+        let s:_bdex_last_catalog_viewed = s:_bdex_last_catalog_built.open()
+    endif
+    call s:_bdex_last_catalog_viewed.goto_index_entry(a:direction, 1, 0)
+endfunction
+
+function! <SID>ShowCatalogStatus(full)
+    if !exists("s:_bdex_last_catalog_viewed") && !exists("s:_bdex_last_catalog_built")
+        call s:_bdex_messenger.send_error("No index available")
+        return
+    elseif exists("s:_bdex_last_catalog_viewed")
+        let l:catalog = s:_bdex_last_catalog_viewed.catalog
+    elseif exists("s:_bdex_last_catalog_built")
+        let l:catalog = s:_bdex_last_catalog_built.catalog
+    endif
+    if empty(a:full)
+        call l:catalog.describe()
+    else
+        call l:catalog.describe_detail()
+    endif
+endfunction
+
+" 1}}}
+
+" Global Functions {{{1
+" ==============================================================================
+
+function! BdexStatusLineCurrentLineInfo()
+    let l:line = line(".")
+    if exists("b:bdex_catalog_viewer") && has_key(b:bdex_catalog_viewer.jump_map, l:line)
+        let l:jump_line = b:bdex_catalog_viewer.jump_map[l:line]
+        let l:status_line = "  -buffersaurus- | "
+        if l:jump_line.entry_index >= 0
+            let l:status_line .= string(l:jump_line.entry_index + 1) . " of " . b:bdex_catalog_viewer.catalog.size() . " | "
+            let l:status_line .= 'File: "' . expand(bufname(l:jump_line.target[0]))
+            let l:status_line .= '" (L:' . l:jump_line.target[1] . ', C:' . l:jump_line.target[2] . ')'
+        else
+            let l:status_line .= '(Indexed File) | "' . expand(bufname(l:jump_line.target[0])) . '"'
+        endif
+        return l:status_line
+    else
+        return " (not a valid indexed line)"
+    endif
+endfunction
+
+function! BdexStatusLineSortRegime()
+    if exists("b:bdex_catalog_viewer")
+        let l:sort_desc = get(s:bdex_catalog_sort_regime_desc, b:bdex_catalog_viewer.catalog.sort_regime, ["??", "invalid sort"])
+        return "sort: " . l:sort_desc[0] . ""
+    else
+        return ""
+    endif
+endfunction
+
+function! BdexFoldText()
+    return substitute(getline(v:foldstart), '^\s\{-1,}\(\[\s*\d\+\s*\]\) .\{-1,}, L\d\+-\d\+: ', '\1 ', "g")
+endfunction
+" 1}}}
+
+" Global Initialization {{{1
+" ==============================================================================
+if exists("s:_bdex_buffer_manager")
+    unlet s:_bdex_buffer_manager
+endif
+let s:_bdex_buffer_manager = s:NewBufferManager()
+if exists("s:_bdex_messenger")
+    unlet s:_bdex_messenger
+endif
+let s:_bdex_messenger = s:NewMessenger("")
+if exists("s:_bdex_indexer")
+    unlet s:_bdex_indexer
+endif
+let s:_bdex_indexer = s:NewIndexer()
+" 1}}}
+
+" Public Command and Key Maps {{{1
+" ==============================================================================
+command! -bang -nargs=*     BdexTerms              :call <SID>IndexTerms('<args>', '<bang>')
+command! -bang -nargs=*     BdexGrep               :call <SID>IndexPatterns(<q-args>, '<bang>')
+command! -bang -nargs=0     BdexNext               :call <SID>GotoEntry("n")
+command! -bang -nargs=0     BdexPrev               :call <SID>GotoEntry("p")
+command! -bang -nargs=0     BdexStatus             :call <SID>ShowCatalogStatus('<bang>')
+
+nnoremap <silent>[k :BdexPrev<CR>
+nnoremap <silent>]k :BdexNext<CR>
+" 1}}}
+
+" restore options
+let &cpo = s:save_cpo
+
+" vim:foldlevel=4:
