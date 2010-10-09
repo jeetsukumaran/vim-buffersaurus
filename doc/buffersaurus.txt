@@ -1,0 +1,81 @@
+*buffersaurus.txt*	Buffer indexing and navigation plugin.
+
+===============================================================================
+                                                          *buffersaurus-commands*
+COMMANDS~
+
+:Bdcat[alog][!] [term]                *buffersaurus-bdcat* *buffersaurus-bdcatalog*
+                    Index current (without '!') or all (with '!') buffers for
+                    [term] (see |buffersaurus-terms|). If [term] is not given,
+                    then the default set of terms for a particular buffer's
+                    filetype will by used, typically generating a
+                    "table-of-contents" style listing. By default, thec catalog
+                    will be sorted by file name followed by line number (see
+                    |buffersaurus-sort|).
+
+:Bdindex[!] [term]
+
+
+
+
+===============================================================================
+                                                             *buffersaurus-keys*
+CATALOG VIEWER KEY MAPS~
+
+-------------------------------------------------------------------------------
+Index Management~
+
+c                   Toggle contexted view on/off (|buffersaurus-context|)
+s                   Cycle through sort regimes (|buffersaurus-sort|).
+u                   Update (rebuild/refresh) index.
+<C-G>               Brief status of index/catalog (|buffersaurus-status|).
+g<C-G>              Detailed status of index/catalog (|buffersaurus-status|).
+q                   Quit the index/catalog window.
+
+-------------------------------------------------------------------------------
+Movement Within the Catalog~
+
+<C-N>               Go to the next index entry.
+<C-P>               Go to the previous index entry.
+f                   Go to the next file entry.
+F                   Go the previous file entry.
+
+-------------------------------------------------------------------------------
+Movement Within the Catalog that Updates the Other Window~
+
+.                   Show the current entry in the previous window.
+i                   Go to the next entry and show it in the previous window.
+I                   Go to the previous entry and show it in the previous
+                    window.
+
+-------------------------------------------------------------------------------
+Jumping to the Matched Line Without Closing the Catalog~
+
+<CR>                Switch focus to the previous window and go to the current
+                    entry.
+o                   Switch focus to the previous window and go to the current
+                    entry (same as <CR>).
+ws                  Split the previous window, switch focus, and go to the
+                    current entry.
+wv                  Split the previous window vertically, switch focus, and go
+                    to the current entry.
+
+-------------------------------------------------------------------------------
+Jumping to the Matched Line, Closing the Catalog~
+
+O                   Close catalog and go to the current entry.
+wS                  Split the previous window and go to the current entry.
+wV                  Split the previous window vertically and go to the current
+                    entry.
+
+===============================================================================
+                                                          *buffersaurus-options*
+OPTIONS AND SETTINGS~
+
+
+
+
+
+
+
+ vim:tw=78:ts=8:ft=help:norl:
