@@ -1113,26 +1113,22 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
         """" Movement within buffer
 
-        " by line
-        noremap <buffer> <silent> j  j^
-        noremap <buffer> <silent> k  k^
-
         " jump to next/prev key entry
-        noremap <buffer> <silent> <C-N>  :call b:bdex_catalog_viewer.goto_index_entry("n", 0, 1)<CR>
-        noremap <buffer> <silent> <C-P>  :call b:bdex_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
+        noremap <buffer> <silent> <C-N>  :<C-U>call b:bdex_catalog_viewer.goto_index_entry("n", 0, 1)<CR>
+        noremap <buffer> <silent> <C-P>  :<C-U>call b:bdex_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
 
-        " jump to next/prev file entry`
-        noremap <buffer> <silent> f      :call b:bdex_catalog_viewer.goto_file_start("n", 0, 1)<CR>
-        noremap <buffer> <silent> F      :call b:bdex_catalog_viewer.goto_file_start("p", 0, 1)<CR>
+        " jump to next/prev file entry
+        noremap <buffer> <silent> f      :<C-U>call b:bdex_catalog_viewer.goto_file_start("n", 0, 1)<CR>
+        noremap <buffer> <silent> F      :<C-U>call b:bdex_catalog_viewer.goto_file_start("p", 0, 1)<CR>
 
         """" Movement within buffer that updates the other window
 
         " show target line in other window, keeping catalog open and in focus
         noremap <buffer> <silent> .       :call b:bdex_catalog_viewer.visit_target(1, 1, "")<CR>
-        noremap <buffer> <silent> i       :call b:bdex_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
-        noremap <buffer> <silent> I       :call b:bdex_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+        noremap <buffer> <silent> i       :<C-U>call b:bdex_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
+        noremap <buffer> <silent> I       :<C-U>call b:bdex_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
 
-        """" Movement that moves to the search target
+        """" Movement that moves to the current search target
 
         " go to target line in other window, keeping catalog open
         noremap <buffer> <silent> <CR>  :call b:bdex_catalog_viewer.visit_target(1, 0, "")<CR>
