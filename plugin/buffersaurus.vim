@@ -824,7 +824,9 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
                     \ "Total",
                     \ "Pattern",
                     \])
-        call add(l:rows, l:header)
+        echohl Title
+        echo l:header "\n"
+        echohl None
         for search_log in self.search_history
             let l:row = self.format_describe_detail_row([
                         \ bufnr(search_log.filepath),
