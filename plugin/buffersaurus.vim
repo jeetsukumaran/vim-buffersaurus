@@ -445,7 +445,7 @@ function! s:NewIndexer()
     " `term_id` is empty, the default filetype pattern is used. If
     " `filepaths` is empty, then all
     " listed buffers are indexed.
-    function! l:indexer.index_terms(filepaths, term_id) dict
+    function! l:indexer.index_terms(filepaths, term_id, sort_regime) dict
         let l:worklist = self.ensure_buffers(a:filepaths)
 
         let l:desc = "Catalog of"
@@ -460,9 +460,7 @@ function! s:NewIndexer()
         else
             let l:desc .= " (in multiple files)"
         endif
-        let l:catalog = s:NewCatalog("term", l:desc)
-
-
+        let l:catalog = s:NewCatalog("term", l:desc, a:sort_regime)
         for buf_ref in l:worklist
             let l:pattern = self.get_buffer_term_pattern(buf_ref, a:term_id)
             call l:catalog.map_buffer(buf_ref, l:pattern)
@@ -473,7 +471,7 @@ function! s:NewIndexer()
     " Indexes all files given by the list `filepaths` for the regular
     " expression given by `pattern`. If `filepaths` is empty, then all
     " listed buffers are indexed.
-    function! l:indexer.index_pattern(filepaths, pattern) dict
+    function! l:indexer.index_pattern(filepaths, pattern, sort_regime) dict
         let l:worklist = self.ensure_buffers(a:filepaths)
 
         let l:desc = "Catalog of pattern '" . a:pattern . "'"
@@ -484,9 +482,7 @@ function! s:NewIndexer()
         else
             let l:desc .= " (in multiple files)"
         endif
-        let l:catalog = s:NewCatalog("pattern", l:desc)
-
-
+        let l:catalog = s:NewCatalog("pattern", l:desc, a:sort_regime)
         for buf_ref in l:worklist
             call l:catalog.map_buffer(buf_ref, a:pattern)
         endfor
@@ -568,7 +564,7 @@ endfunction
 " ==============================================================================
 
 " The main workhorse pseudo-object is created here ...
-function! s:NewCatalog(catalog_domain, catalog_desc)
+function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
 
     " increment catalog counter, creating it if it does not already exist
     if !exists("s:bdex_catalog_count")
@@ -591,10 +587,10 @@ function! s:NewCatalog(catalog_domain, catalog_desc)
                 \ "searched_files"      : {},
                 \ "last_search_time"    : 0,
                 \ "last_search_hits"    : 0,
-                \ "entry_indexes"          : [],
-                \ "entry_labels"    : {},
+                \ "entry_indexes"       : [],
+                \ "entry_labels"        : {},
                 \ "last_compile_time"   : 0,
-                \ "sort_regime"         : 'fl',
+                \ "sort_regime"         : empty(a:default_sort) ? "fl" : a:default_sort,
                 \}
 
     " sets the display context
@@ -1473,23 +1469,23 @@ function! s:ActivateCatalog(domain, catalog)
     endif
 endfunction
 
-function! <SID>IndexTerms(term_name, global)
+function! <SID>IndexTerms(term_name, global, sort_regime)
     if empty(a:global)
         let l:worklist = ["%"]
     else
         let l:worklist = ""
     endif
-    let l:catalog = s:_bdex_indexer.index_terms(l:worklist, a:term_name)
+    let l:catalog = s:_bdex_indexer.index_terms(l:worklist, a:term_name, a:sort_regime)
     call s:ActivateCatalog("term", l:catalog)
 endfunction
 
-function! <SID>IndexPatterns(pattern, global)
+function! <SID>IndexPatterns(pattern, global, sort_regime)
     if empty(a:global)
         let l:worklist = ["%"]
     else
         let l:worklist = ""
     endif
-    let l:catalog = s:_bdex_indexer.index_pattern(l:worklist, a:pattern)
+    let l:catalog = s:_bdex_indexer.index_pattern(l:worklist, a:pattern, a:sort_regime)
     call s:ActivateCatalog("pattern", l:catalog)
 endfunction
 
@@ -1576,14 +1572,15 @@ let s:_bdex_indexer = s:NewIndexer()
 
 " Public Command and Key Maps {{{1
 " ==============================================================================
-command! -bang -nargs=*     BdexTerms              :call <SID>IndexTerms('<args>', '<bang>')
-command! -bang -nargs=*     BdexGrep               :call <SID>IndexPatterns(<q-args>, '<bang>')
-command! -bang -nargs=0     BdexNext               :call <SID>GotoEntry("n")
-command! -bang -nargs=0     BdexPrev               :call <SID>GotoEntry("p")
-command! -bang -nargs=0     BdexStatus             :call <SID>ShowCatalogStatus('<bang>')
+command! -bang -nargs=*     Bdcat           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -bang -nargs=*     Bdindex         :call <SID>IndexTerms('<args>', '<bang>', 'fa')
+command! -bang -nargs=*     Bdsearch        :call <SID>IndexPatterns(<q-args>, '<bang>')
+command! -bang -nargs=0     Bdnext          :call <SID>GotoEntry("n")
+command! -bang -nargs=0     Bdprev          :call <SID>GotoEntry("p")
+command! -bang -nargs=0     Bdstatus        :call <SID>ShowCatalogStatus('<bang>')
 
-nnoremap <silent>[k :BdexPrev<CR>
-nnoremap <silent>]k :BdexNext<CR>
+nnoremap <silent>[k :Bdprev<CR>
+nnoremap <silent>]k :Bdnext<CR>
 " 1}}}
 
 " restore options
