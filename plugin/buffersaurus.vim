@@ -1128,10 +1128,9 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         """" Movement within buffer that updates the other window
 
         " show target line in other window, keeping catalog open and in focus
-        noremap <buffer> <silent> <SPACE> :call b:bdex_catalog_viewer.visit_target(1, 1, "")<CR>
-        noremap <buffer> <silent> i       :call b:bdex_catalog_viewer.visit_target(1, 1, "")<CR>
-        noremap <buffer> <silent> t       :call b:bdex_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
-        noremap <buffer> <silent> T       :call b:bdex_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+        noremap <buffer> <silent> .       :call b:bdex_catalog_viewer.visit_target(1, 1, "")<CR>
+        noremap <buffer> <silent> i       :call b:bdex_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
+        noremap <buffer> <silent> I       :call b:bdex_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
 
         """" Movement that moves to the search target
 
@@ -1379,7 +1378,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Finds next occurrence of specified pattern.
-    function! l:catalog_viewer.goto_pattern(pattern, direction) dict
+    function! l:catalog_viewer.goto_pattern(pattern, direction) dict range
         if a:direction == "b" || a:direction == "p"
             let l:flags = "b"
             " call cursor(line(".")-1, 0)
@@ -1393,7 +1392,14 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             let l:flags .= "w"
         endif
         let l:flags .= "e"
-        let l:lnum = search(a:pattern, l:flags)
+        let l:lnum = -1
+        for i in range(v:count1)
+            if search(a:pattern, l:flags) < 0
+                break
+            else
+                let l:lnum = 1
+            endif
+        endfor
         if l:lnum < 0
             if l:flags[0] == "b"
                 call s:_bdex_messenger.send_info("No previous results")
@@ -1572,15 +1578,15 @@ let s:_bdex_indexer = s:NewIndexer()
 
 " Public Command and Key Maps {{{1
 " ==============================================================================
-command! -bang -nargs=*     Bdcat           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
-command! -bang -nargs=*     Bdindex         :call <SID>IndexTerms('<args>', '<bang>', 'fa')
-command! -bang -nargs=*     Bdsearch        :call <SID>IndexPatterns(<q-args>, '<bang>')
-command! -bang -nargs=0     Bdnext          :call <SID>GotoEntry("n")
-command! -bang -nargs=0     Bdprev          :call <SID>GotoEntry("p")
-command! -bang -nargs=0     Bdstatus        :call <SID>ShowCatalogStatus('<bang>')
+command! -bang -nargs=*         Bdcat           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -bang -nargs=*         Bdindex         :call <SID>IndexTerms('<args>', '<bang>', 'fa')
+command! -bang -nargs=*         Bdsearch        :call <SID>IndexPatterns(<q-args>, '<bang>')
+command! -range -bang -nargs=0  Bdnext          :call <SID>GotoEntry("n")
+command! -range -bang -nargs=0  Bdprev          :call <SID>GotoEntry("p")
+command! -bang -nargs=0         Bdstatus        :call <SID>ShowCatalogStatus('<bang>')
 
-nnoremap <silent>[k :Bdprev<CR>
-nnoremap <silent>]k :Bdnext<CR>
+nnoremap <silent>[k :<C-U>Bdprev<CR>
+nnoremap <silent>]k :<C-U>Bdnext<CR>
 " 1}}}
 
 " restore options
