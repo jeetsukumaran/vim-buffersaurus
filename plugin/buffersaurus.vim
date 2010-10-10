@@ -1276,29 +1276,32 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     function! l:catalog_viewer.render_contexted_entry(index, entry, context_size) dict
         let l:lnum = a:entry.lnum
         let l:buf_num = a:entry.buf_num
-        let l:col = a:entry.col
-        let l:buf_name = a:entry.buf_name
-        let l:ln1 = max([1, l:lnum - a:context_size[0]])
-        let l:ln2 = l:lnum + a:context_size[1]
-        let l:src_lines = self.fetch_buf_lines(l:buf_num, l:ln1, l:ln2)
-        let l:indexed_line_summary = substitute(self.fetch_buf_line(l:buf_num, l:lnum), '^\s*', '', 'g')
-        let l:index_row = self.render_entry_index(a:index) . ' "' . l:buf_name . '", L' . l:ln1 . '-' . l:ln2 . ": " . l:indexed_line_summary
-        call self.append_line(l:index_row, a:index, l:buf_num, l:lnum, l:col)
-        for l:lnx in range(0, len(l:src_lines)-1)
-            let l:src_lnum = l:lnx + l:ln1
-            let l:rendered = "  "
-            " let l:rendered .= repeat(" ", s:bdex_entry_label_field_width + 1)
-            if l:src_lnum == l:lnum
-                let l:lborder = ">"
-                let l:rborder = ">"
-            else
-                let l:lborder = ":"
-                let l:rborder = ":"
-            endif
-            let l:rendered .= s:Format_AlignRight(l:src_lnum, s:bdex_lnum_field_width, " ") . " " . l:rborder
-            let l:rendered .= " ".l:src_lines[l:lnx]
-            call self.append_line(l:rendered, a:index, l:buf_num, l:src_lnum, l:col)
-        endfor
+        let l:matched_line = self.fetch_buf_line(l:buf_num, l:lnum)
+        if self.is_pass_filter(l:matched_line)
+            let l:buf_name = a:entry.buf_name
+            let l:col = a:entry.col
+            let l:ln1 = max([1, l:lnum - a:context_size[0]])
+            let l:ln2 = l:lnum + a:context_size[1]
+            let l:src_lines = self.fetch_buf_lines(l:buf_num, l:ln1, l:ln2)
+            let l:indexed_line_summary = substitute(l:matched_line, '^\s*', '', 'g')
+            let l:index_row = self.render_entry_index(a:index) . ' "' . l:buf_name . '", L' . l:ln1 . '-' . l:ln2 . ": " . l:indexed_line_summary
+            call self.append_line(l:index_row, a:index, l:buf_num, l:lnum, l:col)
+            for l:lnx in range(0, len(l:src_lines)-1)
+                let l:src_lnum = l:lnx + l:ln1
+                let l:rendered = "  "
+                " let l:rendered .= repeat(" ", s:bdex_entry_label_field_width + 1)
+                if l:src_lnum == l:lnum
+                    let l:lborder = ">"
+                    let l:rborder = ">"
+                else
+                    let l:lborder = ":"
+                    let l:rborder = ":"
+                endif
+                let l:rendered .= s:Format_AlignRight(l:src_lnum, s:bdex_lnum_field_width, " ") . " " . l:rborder
+                let l:rendered .= " ".l:src_lines[l:lnx]
+                call self.append_line(l:rendered, a:index, l:buf_num, l:src_lnum, l:col)
+            endfor
+        endif
     endfunction
 
     " Renders an uncontexted entry.
