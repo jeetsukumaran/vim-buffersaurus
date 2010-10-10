@@ -1185,7 +1185,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Applies filter.
     function! l:catalog_viewer.set_filter(regime, pattern) dict
-        if empty(a:regime)
+        if (type(a:regime) == type(0) && a:regime != 0) || (type(a:regime) == type("") && a:regime != "!")
             if a:pattern == "*" || a:pattern == ".*"
                 let self.filter_pattern = ""
                 let self.filter_regime = 0
@@ -1198,8 +1198,15 @@ function! s:NewCatalogViewer(catalog, desc, ...)
                     let self.filter_regime = 1
                     call s:_bdex_messenger.send_info("filtering for: " . self.filter_pattern)
                 else
-                    call s:_bdex_messenger.send_info("filter pattern not specified")
-                    return
+                    " call s:_bdex_messenger.send_info("filter pattern not specified")
+                    " return
+                    let l:ipattern = input("Enter filter pattern: ")
+                    if empty(l:ipattern)
+                        return
+                    else
+                        let self.filter_pattern = l:ipattern
+                        let self.filter_regime = 1
+                    endif
                 endif
             endif
         else
