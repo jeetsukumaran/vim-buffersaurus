@@ -1605,9 +1605,9 @@ function! <SID>IndexPatterns(pattern, global, sort_regime)
     if !exists("g:bdex_set_search_register") || g:bdex_set_search_register
         let @/=a:pattern
     endif
-    if !exists("g:bdex_set_search_highlight") || g:bdex_set_search_highlight
-        set hlsearch
-    endif
+    " if !exists("g:bdex_set_search_highlight") || g:bdex_set_search_highlight
+    "     set hlsearch
+    " endif
 endfunction
 
 function! <SID>OpenLastActiveCatalog()

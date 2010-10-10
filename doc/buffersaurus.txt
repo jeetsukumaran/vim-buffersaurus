@@ -25,9 +25,7 @@ COMMANDS~
                     the 'g:bdex_viewport_split_policy' variable (see
                     |buffersaurus-sort|). If 'g:bdex_set_search_register' is
                     true or not defined, then the pattern will also be
-                    assigned to the search register. If
-                    'g:bdex_set_search_highlight' is true or not defined, then
-                    search highlighting will also be activated.
+                    assigned to the search register.
 
 :Bdo[pen]
                     (Re-)open the most recent catalog.
