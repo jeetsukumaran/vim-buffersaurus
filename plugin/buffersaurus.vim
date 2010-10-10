@@ -1505,6 +1505,12 @@ function! <SID>IndexPatterns(pattern, global, sort_regime)
     endif
     let l:catalog = s:_bdex_indexer.index_pattern(l:worklist, a:pattern, a:sort_regime)
     call s:ActivateCatalog("pattern", l:catalog)
+    if !exists("g:bdex_set_search_register") || g:bdex_set_search_register
+        let @/=a:pattern
+    endif
+    if !exists("g:bdex_set_search_highlight") || g:bdex_set_search_highlight
+        set hlsearch
+    endif
 endfunction
 
 function! <SID>OpenLastActiveCatalog()
