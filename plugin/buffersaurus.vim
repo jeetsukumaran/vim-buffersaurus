@@ -1121,8 +1121,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         noremap <buffer> <silent> <C-P>  :<C-U>call b:bdex_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
 
         " jump to next/prev file entry
-        noremap <buffer> <silent> f      :<C-U>call b:bdex_catalog_viewer.goto_file_start("n", 0, 1)<CR>
-        noremap <buffer> <silent> F      :<C-U>call b:bdex_catalog_viewer.goto_file_start("p", 0, 1)<CR>
+        noremap <buffer> <silent> ]f      :<C-U>call b:bdex_catalog_viewer.goto_file_start("n", 0, 1)<CR>
+        noremap <buffer> <silent> [F      :<C-U>call b:bdex_catalog_viewer.goto_file_start("p", 0, 1)<CR>
 
         """" Movement within buffer that updates the other window
 

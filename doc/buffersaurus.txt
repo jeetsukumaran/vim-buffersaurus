@@ -63,8 +63,8 @@ Movement Within the Catalog~
 
 <C-N>               Go to the next index entry.
 <C-P>               Go to the previous index entry.
-f                   Go to the next file entry.
-F                   Go the previous file entry.
+]f                  Go to the next file entry.
+[F                  Go the previous file entry.
 
 -------------------------------------------------------------------------------
 Movement Within the Catalog that Updates the Other Window~
@@ -98,8 +98,11 @@ wV                  Split the previous window vertically and go to the current
                                                           *buffersaurus-options*
 OPTIONS AND SETTINGS~
 
+g:bdex_sort_regime
 
+g:bdex_set_search_register
 
+g:bdex_set_search_highlight
 
 
 
