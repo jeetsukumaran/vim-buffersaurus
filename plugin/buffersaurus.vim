@@ -1215,7 +1215,16 @@ function! s:NewCatalogViewer(catalog, desc, ...)
                 endif
             endif
         endif
-        "call self.render_buffer()
+        call self.render_buffer()
+    endfunction
+
+    " Return true if the line is NOT to be filtered out.
+    function! l:catalog_viewer.is_pass_filter(text) dict
+        if !self.filter_regime || empty(self.filter_pattern) || a:text =~ self.filter_pattern
+            return 1
+        else
+            return 0
+        endif
     endfunction
 
     " Sets buffer status line.
@@ -1296,8 +1305,11 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     function! l:catalog_viewer.render_uncontexted_entry(index, entry) dict
         let l:index_field = self.render_entry_index(a:index)
         let l:lnum_field = s:Format_AlignRight(a:entry.lnum, 14 - len(l:index_field), " ")
-        let l:rendered_line = "" . l:index_field . " ".l:lnum_field . ":   " . getbufline(a:entry.buf_num, a:entry.lnum)[0]
-        call self.append_line(l:rendered_line, a:index, a:entry.buf_num, a:entry.lnum, a:entry.col)
+        let l:src_line = getbufline(a:entry.buf_num, a:entry.lnum)[0]
+        if self.is_pass_filter(l:src_line)
+            let l:rendered_line = "" . l:index_field . " ".l:lnum_field . ":   " . l:src_line
+            call self.append_line(l:rendered_line, a:index, a:entry.buf_num, a:entry.lnum, a:entry.col)
+        endif
     endfunction
 
     " Renders the index.
