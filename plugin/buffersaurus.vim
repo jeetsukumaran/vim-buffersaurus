@@ -1464,14 +1464,24 @@ endfunction
 
 function! s:ActivateCatalog(domain, catalog)
     let s:_bdex_last_catalog_built = a:catalog
-    let s:_bdex_last_{a:domain}_catalog_built = a:catalog
     let s:_bdex_last_catalog_viewed = a:catalog.open()
-    let s:_bdex_last_{a:domain}_catalog_viewed = s:_bdex_last_catalog_viewed
     if a:catalog.size() > 0
         call a:catalog.describe()
     else
         call s:_bdex_messenger.send_status("no matches")
     endif
+endfunction
+
+function! s:GetLastActiveCatalog()
+    if !exists("s:_bdex_last_catalog_viewed") && !exists("s:_bdex_last_catalog_built")
+        return 0
+    endif
+    if exists("s:_bdex_last_catalog_viewed")
+        let l:catalog = s:_bdex_last_catalog_viewed.catalog
+    elseif exists("s:_bdex_last_catalog_built")
+        let l:catalog = s:_bdex_last_catalog_built.catalog
+    endif
+    return l:catalog
 endfunction
 
 function! <SID>IndexTerms(term_name, global, sort_regime)
@@ -1497,28 +1507,29 @@ function! <SID>IndexPatterns(pattern, global, sort_regime)
     call s:ActivateCatalog("pattern", l:catalog)
 endfunction
 
-function! <SID>GotoEntry(direction)
+function! <SID>OpenLastActiveCatalog()
     if !exists("s:_bdex_last_catalog_viewed") && !exists("s:_bdex_last_catalog_built")
         call s:_bdex_messenger.send_error("No index available for viewing")
-        return
+        return 0
     elseif exists("s:_bdex_last_catalog_viewed")
         call s:_bdex_last_catalog_viewed.open()
     elseif exists("s:_bdex_last_catalog_built")
         let s:_bdex_last_catalog_viewed = s:_bdex_last_catalog_built.open()
     endif
-    call s:_bdex_last_catalog_viewed.goto_index_entry(a:direction, 1, 0)
+    return 1
+endfunction
+
+function! <SID>GotoEntry(direction)
+    if <SID>OpenLastActiveCatalog()
+        call s:_bdex_last_catalog_viewed.goto_index_entry(a:direction, 1, 0)
+    endif
 endfunction
 
 function! <SID>ShowCatalogStatus(full)
-    if !exists("s:_bdex_last_catalog_viewed") && !exists("s:_bdex_last_catalog_built")
+    let l:catalog = s:GetLastActiveCatalog()
+    if type(l:catalog) == type(0) && l:catalog == 0
         call s:_bdex_messenger.send_error("No index available")
-        return
-    elseif exists("s:_bdex_last_catalog_viewed")
-        let l:catalog = s:_bdex_last_catalog_viewed.catalog
-    elseif exists("s:_bdex_last_catalog_built")
-        let l:catalog = s:_bdex_last_catalog_built.catalog
-    endif
-    if empty(a:full)
+    elseif empty(a:full)
         call l:catalog.describe()
     else
         call l:catalog.describe_detail()
@@ -1582,7 +1593,8 @@ let s:_bdex_indexer = s:NewIndexer()
 " ==============================================================================
 command! -bang -nargs=*         Bdcatalog       :call <SID>IndexTerms('<args>', '<bang>', 'fl')
 command! -bang -nargs=*         Bdindex         :call <SID>IndexTerms('<args>', '<bang>', 'fa')
-command! -bang -nargs=*         Bdsearch        :call <SID>IndexPatterns(<q-args>, '<bang>', '')
+command! -bang -nargs=*         Bdgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
+command! -nargs=0               Bdopen          :call <SID>OpenLastActiveCatalog()
 command! -range -bang -nargs=0  Bdnext          :call <SID>GotoEntry("n")
 command! -range -bang -nargs=0  Bdprev          :call <SID>GotoEntry("p")
 command! -bang -nargs=0         Bdstatus        :call <SID>ShowCatalogStatus('<bang>')
