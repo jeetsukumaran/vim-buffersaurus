@@ -976,6 +976,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endif
     let l:catalog_viewer["jump_map"] = {}
     let l:catalog_viewer["win_num"] = 0
+    let l:catalog_viewer["filter_regime"] = 0
+    let l:catalog_viewer["filter_pattern"] = ""
 
     " Opens the buffer for viewing, creating it if needed. If non-empty first
     " argument is given, forces re-rendering of buffer.
@@ -1116,6 +1118,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Sets buffer commands.
     function! l:catalog_viewer.setup_buffer_commands() dict
+        command! -bang -nargs=* Bdfilter :call b:bdex_catalog_viewer.set_filter('<bang>', <q-args>)
         augroup BdexCatalogViewer
             au!
             autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,BufEnter,BufLeave <buffer> call b:bdex_catalog_viewer.highlight_current_line()
@@ -1177,6 +1180,42 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             " setlocal fillchars=fold:\ "
             setlocal fillchars=fold:.
         endif
+    endfunction
+
+    " Applies filter.
+    function! l:catalog_viewer.set_filter(regime, pattern) dict
+        if empty(a:regime)
+            if a:pattern == "*" || a:pattern == ".*"
+                let self.filter_pattern = ""
+                let self.filter_regime = 0
+                call s:_bdex_messenger.send_info("clearing filter")
+            else
+                if !empty(a:pattern)
+                    let self.filter_pattern = a:pattern
+                endif
+                if !empty(self.filter_pattern)
+                    let self.filter_regime = 1
+                    call s:_bdex_messenger.send_info("filtering for: " . self.filter_pattern)
+                else
+                    call s:_bdex_messenger.send_info("filter pattern not specified")
+                    return
+                endif
+            endif
+        else
+            if a:pattern == "*" || a:pattern == ".*"
+                let self.filter_pattern = ""
+                let self.filter_regime = 0
+                call s:_bdex_messenger.send_info("clearing filter")
+            else
+                let self.filter_regime = 0
+                if empty(self.filter_pattern)
+                    call s:_bdex_messenger.send_info("filter pattern not set")
+                else
+                    call s:_bdex_messenger.send_info("removing filter")
+                endif
+            endif
+        endif
+        "call self.render_buffer()
     endfunction
 
     " Sets buffer status line.
@@ -1633,7 +1672,10 @@ nnoremap <silent><Leader>[ :<C-U>Bdprev<CR>
 nnoremap <silent><Leader>] :<C-U>Bdnext<CR>
 " 1}}}
 
+" Restore State {{{1
+" ============================================================================
 " restore options
 let &cpo = s:save_cpo
+" 1}}}
 
 " vim:foldlevel=4:
