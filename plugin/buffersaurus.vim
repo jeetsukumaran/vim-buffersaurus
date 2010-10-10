@@ -1132,6 +1132,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         """" Index buffer management
         noremap <buffer> <silent> c       :call b:bdex_catalog_viewer.toggle_context()<CR>
         noremap <buffer> <silent> s       :call b:bdex_catalog_viewer.cycle_sort_regime()<CR>
+        noremap <buffer> <silent> f       :call b:bdex_catalog_viewer.toggle_filter()<CR>
         noremap <buffer> <silent> u       :call b:bdex_catalog_viewer.rebuild_catalog()<CR>
         noremap <buffer> <silent> <C-G>   :call b:bdex_catalog_viewer.catalog.describe()<CR>
         noremap <buffer> <silent> g<C-G>  :call b:bdex_catalog_viewer.catalog.describe_detail()<CR>
@@ -1216,6 +1217,11 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             endif
         endif
         call self.render_buffer()
+    endfunction
+
+    " Toggles filter.
+    function! l:catalog_viewer.toggle_filter() dict
+        call self.set_filter(!self.filter_regime, "")
     endfunction
 
     " Return true if the line is NOT to be filtered out.
