@@ -100,6 +100,8 @@ OPTIONS AND SETTINGS~
 
 g:bdex_sort_regime
 
+g:bdex_move_wrap
+
 g:bdex_set_search_register
 
 g:bdex_set_search_highlight

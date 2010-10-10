@@ -1242,7 +1242,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Sets buffer status line.
     function! l:catalog_viewer.setup_buffer_statusline() dict
-        setlocal statusline=\-buffersaurus\-\|\ %{BdexStatusLineCurrentLineInfo()}%<%=\|%{BdexStatusLineSortRegime()}"
+        " setlocal statusline=\-buffersaurus\-\|\ %{BdexStatusLineCurrentLineInfo()}%<%=\|%{BdexStatusLineSortRegime()}\|%{BdexStatusLineFilterRegime()}
+        setlocal statusline=\-buffersaurus\-\|\ %{BdexStatusLineCurrentLineInfo()}%<%=\|%{BdexStatusLineSortRegime()}
     endfunction
 
     " Populates the buffer with the catalog index.
@@ -1635,12 +1636,19 @@ endfunction
 " ==============================================================================
 
 function! BdexStatusLineCurrentLineInfo()
+    if !exists("b:bdex_catalog_viewer")
+        return "[not a valid catalog]"
+    endif
     let l:line = line(".")
     let l:status_line = ""
-    if exists("b:bdex_catalog_viewer") && has_key(b:bdex_catalog_viewer.jump_map, l:line)
+    if b:bdex_catalog_viewer.filter_regime && !empty(b:bdex_catalog_viewer.filter_pattern)
+        let l:status_line .= "*filtered* | "
+    endif
+    if has_key(b:bdex_catalog_viewer.jump_map, l:line)
         let l:jump_line = b:bdex_catalog_viewer.jump_map[l:line]
         if l:jump_line.entry_index >= 0
-            let l:status_line .= string(l:jump_line.entry_index + 1) . " of " . b:bdex_catalog_viewer.catalog.size() . " | "
+            let l:status_line .= string(l:jump_line.entry_index + 1) . " of " . b:bdex_catalog_viewer.catalog.size()
+            let l:status_line .= " | "
             let l:status_line .= 'File: "' . expand(bufname(l:jump_line.target[0]))
             let l:status_line .= '" (L:' . l:jump_line.target[1] . ', C:' . l:jump_line.target[2] . ')'
         else
@@ -1656,6 +1664,18 @@ function! BdexStatusLineSortRegime()
     if exists("b:bdex_catalog_viewer")
         let l:sort_desc = get(s:bdex_catalog_sort_regime_desc, b:bdex_catalog_viewer.catalog.sort_regime, ["??", "invalid sort"])
         return "sort: " . l:sort_desc[0] . ""
+    else
+        return ""
+    endif
+endfunction
+
+function! BdexStatusLineFilterRegime()
+    if exists("b:bdex_catalog_viewer")
+        if b:bdex_catalog_viewer.filter_regime && !empty(b:bdex_catalog_viewer.filter_pattern)
+            return "filter: /" . b:bdex_catalog_viewer.filter_pattern . "/"
+        else
+            return "filter: OFF"
+        endif
     else
         return ""
     endif
