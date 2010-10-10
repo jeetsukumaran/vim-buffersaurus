@@ -1090,6 +1090,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             highlight! link BdexSyntaxMatchedLineText      Question
             highlight! link BdexSyntaxUncontextedLineNum   Question
             highlight! link BdexSyntaxUncontextedLineText  Normal
+            highlight! def BdexCurrentEntry gui=reverse cterm=reverse term=reverse
         endif
     endfunction
 
@@ -1269,7 +1270,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             let l:prev_line = b:bdex_cur_line
             let b:bdex_cur_line = line(".")
             3match none
-            exec '3match Search /^\%'. b:bdex_cur_line .'l.*/'
+            exec '3match BdexCurrentEntry /^\%'. b:bdex_cur_line .'l.*/'
         " endif
     endfunction
 
@@ -1484,7 +1485,7 @@ function! <SID>IndexTerms(term_name, global, sort_regime)
 endfunction
 
 function! <SID>IndexPatterns(pattern, global, sort_regime)
-    if empty(pattern)
+    if empty(a:pattern)
         call s:_bdex_messenger.send_error("search pattern must be specified")
     endif
     if empty(a:global)
