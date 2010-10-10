@@ -44,6 +44,16 @@ COMMANDS~
                     Show brief (without '!') or detailed (with '!') description
                     of the most recent catalog.
 
+:Bdf[ilter][!] [pattern]
+                    Without '!': filter results to only show lines matching
+                    [pattern]. If [pattern] is not given, then the previous
+                    filter pattern will be used. If there is no previous
+                    filter pattern, then the user will be prompted for a new
+                    pattern. With '!': remove filter. In all cases if
+                    [pattern] is '*' or '.*', then the saved pattern will be
+                    cleared and the filter removed. Only available when in a
+                    catalog buffer.
+
 ===============================================================================
                                                              *buffersaurus-keys*
 CATALOG VIEWER KEY MAPS~
@@ -53,6 +63,10 @@ Index Management~
 
 c                   Toggle contexted view on/off (|buffersaurus-context|)
 s                   Cycle through sort regimes (|buffersaurus-sort|).
+f                   Filter results for lines matching pattern
+                    (see |buffersaurus-filter|).
+F                   Enter and apply a new filter pattern
+                    (see |buffersaurus-filter|).
 u                   Update (rebuild/refresh) index.
 <C-G>               Brief status of index/catalog (|buffersaurus-status|).
 g<C-G>              Detailed status of index/catalog (|buffersaurus-status|).
