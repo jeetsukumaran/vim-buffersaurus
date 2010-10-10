@@ -4,7 +4,7 @@
                                                           *buffersaurus-commands*
 COMMANDS~
 
-:Bdcat[alog][!] [term]                *buffersaurus-bdcat* *buffersaurus-bdcatalog*
+:Bdc[atalog][!] [term]                *buffersaurus-bdcat* *buffersaurus-bdcatalog*
                     Index current (without '!') or all (with '!') buffers for
                     [term] (see |buffersaurus-terms|). If [term] is not given,
                     then the default set of terms for a particular buffer's
@@ -13,17 +13,36 @@ COMMANDS~
                     will be sorted by file name followed by line number (see
                     |buffersaurus-sort|).
 
-:Bdindex[!] [term]
+:Bdi[ndex][!] [term]
                     Same as |buffersaurus-bdcat|, but by default sorted by file
                     name followed by alphabetically by source line text.
 
-:Bdsearch[!] {pattern}
+:Bdg[rep][!] {pattern}
                     Search current (without '!') or all (with '!') buffers for
-                    regular expression pattern given by {pattern}. By default,
-                    the catalog will be sorted by file name followed by line
-                    number, though this can be customized by setting the
-                    'g:bdex_viewport_split_policy' variable (see
-                    |buffersaurus-sort|).
+                    the regular expression |pattern| given by {pattern}. By
+                    default, the catalog will be sorted by file name followed
+                    by line number, though this can be customized by setting
+                    the 'g:bdex_viewport_split_policy' variable (see
+                    |buffersaurus-sort|). If 'g:bdex_set_search_register' is
+                    true or not defined, then the pattern will also be
+                    assigned to the search register. If
+                    'g:bdex_set_search_highlight' is true or not defined, then
+                    search highlighting will also be activated.
+
+:Bdo[pen]
+                    (Re-)open the most recent catalog.
+
+:Bdn[ext]
+                    Go to the next matched line from the most recent catalog
+                    (like |:cnext|).
+
+:Bdp[rev]
+                    Go to the previous matched line from the most recent
+                    catalog (like |:cprev|).
+
+:Bds[tatus][!]
+                    Show brief (without '!') or detailed (with '!') description
+                    of the most recent catalog.
 
 ===============================================================================
                                                              *buffersaurus-keys*
