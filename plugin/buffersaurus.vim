@@ -1,13 +1,33 @@
-" buffersaurus -- Vim document buffer indexing and navigation utility
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""  Buffersaurus dex
+""
+""  Vim document buffer indexing and navigation utility
+""
+""  Copyright 2010 Jeet Sukumaran.
+""
+""  This program is free software; you can redistribute it and/or modify
+""  it under the terms of the GNU General Public License as published by
+""  the Free Software Foundation; either version 3 of the License, or
+""  (at your option) any later version.
+""
+""  This program is distributed in the hope that it will be useful,
+""  but WITHOUT ANY WARRANTY; without even the implied warranty of
+""  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+""  GNU General Public License <http://www.gnu.org/licenses/>
+""  for more details.
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+" Reload and Compatibility Guard {{{1
+" ============================================================================
+" Reload protection.
+if (exists('g:did_buffersaurus') && g:did_buffersaurus) || &cp || version < 700
+    finish
+endif
+let g:did_buffersaurus = 1
 " avoid line continuation issues (see ':help user_41.txt')
 let s:save_cpo = &cpo
 set cpo&vim
-
-" Logger Setup (':g/s:_LOG/normal VX' to strip all logging code) {{{1
-" (s:_LOG) ====================================================================
-let s:_LOG = log#getLogger(expand('<sfile>:t'))
-" (s:_LOG) 1}}}
+" 1}}}
 
 " Plugin Options {{{1
 " =============================================================================
@@ -1604,6 +1624,10 @@ command! -nargs=0               Bdopen          :call <SID>OpenLastActiveCatalog
 command! -range -bang -nargs=0  Bdnext          :call <SID>GotoEntry("n")
 command! -range -bang -nargs=0  Bdprev          :call <SID>GotoEntry("p")
 command! -bang -nargs=0         Bdstatus        :call <SID>ShowCatalogStatus('<bang>')
+
+" (development/debugging) "
+let g:bdex_plugin_path = expand('<sfile>:p')
+command! -nargs=0               Bdreboot        :let g:did_buffersaurus = 0  | :execute("so " . g:bdex_plugin_path)
 
 nnoremap <silent><Leader>[ :<C-U>Bdprev<CR>
 nnoremap <silent><Leader>] :<C-U>Bdnext<CR>
