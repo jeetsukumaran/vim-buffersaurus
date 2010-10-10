@@ -1133,6 +1133,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         noremap <buffer> <silent> c       :call b:bdex_catalog_viewer.toggle_context()<CR>
         noremap <buffer> <silent> s       :call b:bdex_catalog_viewer.cycle_sort_regime()<CR>
         noremap <buffer> <silent> f       :call b:bdex_catalog_viewer.toggle_filter()<CR>
+        noremap <buffer> <silent> F       :call b:bdex_catalog_viewer.prompt_and_apply_filter()<CR>
         noremap <buffer> <silent> u       :call b:bdex_catalog_viewer.rebuild_catalog()<CR>
         noremap <buffer> <silent> <C-G>   :call b:bdex_catalog_viewer.catalog.describe()<CR>
         noremap <buffer> <silent> g<C-G>  :call b:bdex_catalog_viewer.catalog.describe_detail()<CR>
@@ -1198,8 +1199,6 @@ function! s:NewCatalogViewer(catalog, desc, ...)
                     let self.filter_regime = 1
                     call s:_bdex_messenger.send_info("filtering for: " . self.filter_pattern)
                 else
-                    " call s:_bdex_messenger.send_info("filter pattern not specified")
-                    " return
                     let l:ipattern = input("Enter filter pattern: ")
                     if empty(l:ipattern)
                         return
@@ -1229,6 +1228,16 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     " Toggles filter.
     function! l:catalog_viewer.toggle_filter() dict
         call self.set_filter(!self.filter_regime, "")
+    endfunction
+
+    " Ask user for filter pattern, and, if given, set and apply it.
+    function! l:catalog_viewer.prompt_and_apply_filter()
+        let l:ipattern = input("Enter filter pattern: ")
+        if empty(l:ipattern)
+            return
+        else
+            call self.set_filter(1, l:ipattern)
+        endif
     endfunction
 
     " Return true if the line is NOT to be filtered out.
