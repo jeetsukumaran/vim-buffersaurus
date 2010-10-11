@@ -1068,7 +1068,6 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         setlocal nobuflisted
         setlocal nolist
         setlocal noinsertmode
-        setlocal number
         " setlocal nonumber
         setlocal cursorline
         setlocal nospell
@@ -1176,7 +1175,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         if has("folding")
             "setlocal foldcolumn=3
             setlocal foldmethod=syntax
-            setlocal foldlevel=3
+            setlocal foldlevel=4
             setlocal foldenable
             setlocal foldtext=BdexFoldText()
             " setlocal fillchars=fold:\ "
