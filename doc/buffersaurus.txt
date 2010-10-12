@@ -4,7 +4,7 @@
                                                           *buffersaurus-commands*
 COMMANDS~
 
-:Bdc[atalog][!] [term]                *buffersaurus-bdcat* *buffersaurus-bdcatalog*
+:Bdi[ndex][!] [term]                  *buffersaurus-bdcat* *buffersaurus-bdcatalog*
                     Index current (without '!') or all (with '!') buffers for
                     [term] (see |buffersaurus-terms|). If [term] is not given,
                     then the default set of terms for a particular buffer's
@@ -12,10 +12,6 @@ COMMANDS~
                     "table-of-contents" style listing. By default, the catalog
                     will be sorted by file name followed by line number (see
                     |buffersaurus-sort|).
-
-:Bdi[ndex][!] [term]
-                    Same as |buffersaurus-bdcat|, but by default sorted by file
-                    name followed by alphabetically by source line text.
 
 :Bdg[rep][!] {pattern}
                     Search current (without '!') or all (with '!') buffers for
