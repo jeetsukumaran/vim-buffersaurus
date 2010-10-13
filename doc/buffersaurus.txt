@@ -4,24 +4,24 @@
                                                           *buffersaurus-commands*
 COMMANDS~
 
-:Bdi[ndex][!] [term]                  *buffersaurus-bdcat* *buffersaurus-bdcatalog*
-                    Index current (without '!') or all (with '!') buffers for
-                    [term] (see |buffersaurus-terms|). If [term] is not given,
-                    then the default set of terms for a particular buffer's
-                    filetype will by used, typically generating a
-                    "table-of-contents" style listing. By default, the catalog
-                    will be sorted by file name followed by line number (see
-                    |buffersaurus-sort|).
-
 :Bdg[rep][!] {pattern}
                     Search current (without '!') or all (with '!') buffers for
-                    the regular expression |pattern| given by {pattern}. By
-                    default, the catalog will be sorted by file name followed
-                    by line number, though this can be customized by setting
-                    the 'g:bdex_viewport_split_policy' variable (see
-                    |buffersaurus-sort|). If 'g:bdex_set_search_register' is
-                    true or not defined, then the pattern will also be
-                    assigned to the search register.
+                    the regular expression |pattern| given by {pattern}. If
+                    'g:bdex_set_search_register' is not false (0), then
+                    the pattern will also be assigned to the search register.
+
+:Bdc[ontents]!
+                    Generate a "table of contents" type catalog for current
+                    (without '!') or all (with '!') buffers, based on the
+                    specific filetype of each buffer. See
+                    |buffersaurus-filetype-patterns| for more information on
+                    the patterns to be matched.
+
+:Bdt[term]! {term-name}
+                    Generate a catalog of occurrences of the term pattern
+                    named {term-name} in current (without '!') or all (with
+                    '!') buffers. See |buffersaurus-term-patterns| for
+                    information on defining and using terms.
 
 :Bdo[pen]
                     (Re-)open the most recent catalog.
