@@ -71,15 +71,15 @@ Movement Within the Catalog~
 
 <C-N>               Go to the next index entry.
 <C-P>               Go to the previous index entry.
-]f                  Go to the next file entry.
-[F                  Go the previous file entry.
+}                   Go to the next file entry.
+{                   Go the previous file entry.
 
 -------------------------------------------------------------------------------
 Movement Within the Catalog that Updates the Other Window~
 
 .                   Show the current entry in the previous window.
-i                   Go to the next entry and show it in the previous window.
-I                   Go to the previous entry and show it in the previous
+>                   Go to the next entry and show it in the previous window.
+<                   Go to the previous entry and show it in the previous
                     window.
 
 -------------------------------------------------------------------------------
