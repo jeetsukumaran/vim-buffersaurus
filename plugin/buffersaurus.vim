@@ -1528,14 +1528,15 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             return 0
         endif
         let [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy] = self.jump_map[l:cur_line].target
+        let l:cur_win_num = winnr()
         if !a:keep_catalog
             call self.quit_view()
         endif
         call self.visit_buffer(l:jump_to_buf_num, a:split_cmd)
         call setpos('.', [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy])
         execute(s:bdex_post_move_cmd)
-        if a:keep_catalog && a:refocus_catalog
-            execute("wincmd p")
+        if a:keep_catalog && a:refocus_catalog && winnr() != l:cur_win_num
+            execute(l:cur_win_num."wincmd w")
         endif
         let l:report = ""
         if self.jump_map[l:cur_line].entry_index >= 0
