@@ -975,7 +975,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         let l:catalog_viewer["buf_num"] = l:bdex_bufs[0]
     endif
     let l:catalog_viewer["jump_map"] = {}
-    let l:catalog_viewer["win_num"] = 0
+    let l:catalog_viewer["split_mode"] = s:_bdex_buffer_manager.get_split_mode()
     let l:catalog_viewer["filter_regime"] = 0
     let l:catalog_viewer["filter_pattern"] = ""
 
@@ -1021,7 +1021,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             execute(l:bfwn . " wincmd w")
         else
             " create viewport
-            execute("silent keepalt keepjumps " . s:_bdex_buffer_manager.get_split_mode() . " " . self.buf_num)
+            let self.split_mode = s:_bdex_buffer_manager.get_split_mode()
+            execute("silent keepalt keepjumps " . self.split_mode . " " . self.buf_num)
         endif
     endfunction
 
@@ -1404,26 +1405,119 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         endif
     endfunction
 
+    " from NERD_Tree, via VTreeExplorer: determine the number of windows open
+    " to this buffer number.
+    function! l:catalog_viewer.num_viewports_on_buffer(bnum) dict
+        let cnt = 0
+        let winnum = 1
+        while 1
+            let bufnum = winbufnr(winnum)
+            if bufnum < 0
+                break
+            endif
+            if bufnum ==# a:bnum
+                let cnt = cnt + 1
+            endif
+            let winnum = winnum + 1
+        endwhile
+        return cnt
+    endfunction
+
+    " from NERD_Tree: find the window number of the first normal window
+    function! l:catalog_viewer.first_usable_viewport() dict
+        let i = 1
+        while i <= winnr("$")
+            let bnum = winbufnr(i)
+            if bnum != -1 && getbufvar(bnum, '&buftype') ==# ''
+                        \ && !getwinvar(i, '&previewwindow')
+                        \ && (!getbufvar(bnum, '&modified') || &hidden)
+                return i
+            endif
+
+            let i += 1
+        endwhile
+        return -1
+    endfunction
+
+    " from NERD_Tree: returns 0 if opening a file from the tree in the given
+    " window requires it to be split, 1 otherwise
+    function! l:catalog_viewer.is_usable_viewport(winnumber) dict
+        "gotta split if theres only one window (i.e. the NERD tree)
+        if winnr("$") ==# 1
+            return 0
+        endif
+        let oldwinnr = winnr()
+        execute(a:winnumber . "wincmd p")
+        let specialWindow = getbufvar("%", '&buftype') != '' || getwinvar('%', '&previewwindow')
+        let modified = &modified
+        execute(oldwinnr . "wincmd p")
+        "if its a special window e.g. quickfix or another explorer plugin then we
+        "have to split
+        if specialWindow
+            return 0
+        endif
+        if &hidden
+            return 1
+        endif
+        return !modified || self.num_viewports_on_buffer(winbufnr(a:winnumber)) >= 2
+    endfunction
+
+    " Acquires a viewport to show the source buffer. Returns the split command
+    " to use when switching to the buffer.
+    function! l:catalog_viewer.acquire_viewport(split_cmd)
+        if self.split_mode == "buffer" && empty(a:split_cmd)
+            " buffersaurus used original buffer's viewport,
+            " so the the buffersaurus viewport is the viewport to use
+            return ""
+        endif
+        if !self.is_usable_viewport(winnr("#")) && self.first_usable_viewport() ==# -1
+            " no appropriate viewport is available: create new using default
+            " split mode
+            " TODO: maybe use g:bdex_viewport_split_policy?
+            if empty(a:split_cmd)
+                return "sp"
+            else
+                return a:split_cmd
+            endif
+        else
+            try
+                if !self.is_usable_viewport(winnr("#"))
+                    execute(self.first_usable_viewport() . "wincmd w")
+                else
+                    execute('wincmd p')
+                endif
+            catch /^Vim\%((\a\+)\)\=:E37/
+                echo v:exception
+                " call s:putCursorInTreeWin()
+                " throw "NERDTree.FileAlreadyOpenAndModifiedError: ". self.path.str() ." is already open and modified."
+            catch /^Vim\%((\a\+)\)\=:/
+                echo v:exception
+            endtry
+            return a:split_cmd
+        endif
+    endfunction
+
     " Visits the specified buffer in the previous window, if it is already
     " visible there. If not, then it looks for the first window with the
     " buffer showing and visits it there. If no windows are showing the
     " buffer, ... ?
-    function! l:catalog_viewer.visit_buffer(buf_num, use_previous_window, split_cmd) dict
-        if winbufnr(winnr("#")) == a:buf_num || a:use_previous_window
-            execute("wincmd p")
-        else
-            throw s:_bdex_messenger.format_exception("Not implemented!")
-        endif
+    function! l:catalog_viewer.visit_buffer(buf_num, split_cmd) dict
+        " acquire window
+        let l:split_cmd = self.acquire_viewport(a:split_cmd)
+        " switch to buffer in acquired window
         let l:old_switch_buf = &switchbuf
-        if empty(a:split_cmd)
+        if empty(l:split_cmd)
+            " explicit split command not given: switch to buffer in current
+            " window
             let &switchbuf="useopen"
             execute("silent keepalt keepjumps buffer " . a:buf_num)
         else
+            " explcit split command given: split current window
             let &switchbuf="split"
-            execute("silent keepalt keepjumps " . a:split_cmd . " " . a:buf_num)
+            execute("silent keepalt keepjumps " . l:split_cmd . " " . a:buf_num)
         endif
         let &switchbuf=l:old_switch_buf
-    endfunction
+        endfunction
 
     " Go to the line mapped to by the current line/index of the catalog
     " viewer.
@@ -1437,7 +1531,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         if !a:keep_catalog
             call self.quit_view()
         endif
-        call self.visit_buffer(l:jump_to_buf_num, 1, a:split_cmd)
+        call self.visit_buffer(l:jump_to_buf_num, a:split_cmd)
         call setpos('.', [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy])
         execute(s:bdex_post_move_cmd)
         if a:keep_catalog && a:refocus_catalog
