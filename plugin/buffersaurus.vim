@@ -488,6 +488,24 @@ function! s:NewIndexer()
         return l:catalog
     endfunction
 
+    " Indexes all files given by the list `filepaths` for tags.
+    function! l:indexer.index_tags(filepaths) dict
+        let l:worklist = self.ensure_buffers(a:filepaths)
+        let l:desc = "Catalog of tags"
+        if empty(a:filepaths)
+            let l:desc .= " (in all buffers)"
+        elseif len(a:filepaths) == 1
+            let l:desc .= ' (in "' . a:filepaths[0] . '")'
+        else
+            let l:desc .= " (in multiple files)"
+        endif
+        let l:catalog = s:NewTagCatalog("tag", l:desc)
+        for buf_ref in l:worklist
+            call l:catalog.map_buffer(buf_ref)
+        endfor
+        return l:catalog
+    endfunction
+
     " Indexes all files given by the list `filepaths` for the regular
     " expression given by `pattern`. If `filepaths` is empty, then all
     " listed buffers are indexed.
@@ -946,6 +964,21 @@ function! s:compare_matched_lines_a(m1, m2)
     else
         return 0
     endif
+endfunction
+
+" 1}}}
+
+" TagCatalog {{{1
+" ============================================================================
+
+" The main workhorse pseudo-object is created here ...
+function! s:NewTagCatalog(catalog_domain, catalog_desc)
+    let l:catalog = s:NewCatalog(a:catalog_domain, a:catalog_desc, "")
+
+    function! l:catalog.map_buffer(buf_ref) dict
+    endfunction
+
+    return l:catalog
 endfunction
 
 " 1}}}
@@ -1685,6 +1718,16 @@ function! <SID>IndexTerms(term_name, global, sort_regime)
     call s:ActivateCatalog("term", l:catalog)
 endfunction
 
+function! <SID>IndexTags(global)
+    if empty(a:global)
+        let l:worklist = ["%"]
+    else
+        let l:worklist = ""
+    endif
+    let l:catalog = s:_bdex_indexer.index_tags(l:worklist)
+    call s:ActivateCatalog("tags", l:catalog)
+endfunction
+
 function! <SID>IndexPatterns(pattern, global, sort_regime)
     if empty(a:pattern)
         call s:_bdex_messenger.send_error("search pattern must be specified")
@@ -1808,6 +1851,7 @@ let s:_bdex_indexer = s:NewIndexer()
 " Public Command and Key Maps {{{1
 " ==============================================================================
 command! -bang -nargs=*         Bdgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
+command! -bang -nargs=*         Bdtags          :call <SID>IndexTags('<bang>')
 command! -bang -nargs=0         Bdcontents      :call <SID>IndexTerms('<args>', '<bang>', 'fl')
 command! -bang -nargs=1         Bdterm          :call <SID>IndexTerms('<args>', '<bang>', 'fl')
 command! -nargs=0               Bdopen          :call <SID>OpenLastActiveCatalog()
