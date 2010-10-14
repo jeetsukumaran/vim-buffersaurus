@@ -1475,7 +1475,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             " split mode
             " TODO: maybe use g:bdex_viewport_split_policy?
             if empty(a:split_cmd)
-                return "sp"
+                return "sb"
             else
                 return a:split_cmd
             endif
