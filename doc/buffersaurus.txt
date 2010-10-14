@@ -17,7 +17,7 @@ COMMANDS~
                     |buffersaurus-filetype-patterns| for more information on
                     the patterns to be matched.
 
-:Bdt[term]! {term-name}
+:Bdt[terms]! {term-name}
                     Generate a catalog of occurrences of the term pattern
                     named {term-name} in current (without '!') or all (with
                     '!') buffers. See |buffersaurus-term-patterns| for
