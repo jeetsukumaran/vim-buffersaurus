@@ -968,6 +968,49 @@ endfunction
 
 " 1}}}
 
+" NewMarksCatalog {{{1
+" ============================================================================
+
+" The main workhorse pseudo-object is created here ...
+function! s:NewMarksCatalog(catalog_domain, catalog_desc)
+    let l:catalog = s:NewCatalog(a:catalog_domain, a:catalog_desc, "")
+
+    " Returns dictionary of marks. If `global` is true then upper-case marks
+    " will be included as well. Otherwise, only lower-case marks.
+    function! l:catalog.get_mark_list(global) dict
+        if !empty(a:global) && a:global == "!"
+            let l:marks = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        else
+            let l:marks = "abcdefghijklmnopqrstuvwxyz"
+        endif
+        let l:markstr = ""
+        try
+            redir => l:markstr | execute("silent marks ".l:marks) | redir END
+        catch /E283:/
+            return {}
+        endtry
+        let l:markstr_rows = split(l:markstr, "\n")
+        let l:mark_list = []
+        for l:row in l:markstr_rows[1:]
+            let l:mark_parts = matchlist(l:row, '^\s\{-1,}\(\a\)\s\{-1,}\(\d\{-1,}\)\s\{-1,}\(\d\{-1,}\)\s\{-1,}\(.*\)$')
+            if len(l:mark_parts) < 4
+                continue
+            endif
+            if l:mark_parts[1] =~ '[a-z]'
+                let l:fpath = expand("%:p")
+            else
+                let l:fpath = l:mark_parts[4]
+            endif
+            call add(l:mark_list, [l:mark_parts[1], l:fpath, str2nr(l:mark_parts[2]), str2nr(l:mark_parts[3])])
+        endfor
+        return l:mark_list
+    endfunction
+
+    return l:catalog
+endfunction
+
+" 1}}}
+
 " TagCatalog {{{1
 " ============================================================================
 
