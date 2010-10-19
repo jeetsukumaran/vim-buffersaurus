@@ -1729,6 +1729,15 @@ endfunction
 " Command Interface {{{1
 " =============================================================================
 
+function! s:ComposeBufferTargetList(bang)
+    if (exists('g:bdex_default_single_file') && g:bdex_default_single_file && empty(a:bang))
+                \ || !empty(a:bang)
+        return ["%"]
+    else
+        return ""
+    endif
+endfunction
+
 function! s:ActivateCatalog(domain, catalog)
     let s:_bdex_last_catalog_built = a:catalog
     let s:_bdex_last_catalog_viewed = a:catalog.open()
@@ -1751,35 +1760,24 @@ function! s:GetLastActiveCatalog()
     return l:catalog
 endfunction
 
-function! <SID>IndexTerms(term_name, global, sort_regime)
-    if empty(a:global)
-        let l:worklist = ["%"]
-    else
-        let l:worklist = ""
-    endif
+function! <SID>IndexTerms(term_name, bang, sort_regime)
+    let l:worklist = s:ComposeBufferTargetList(a:bang)
     let l:catalog = s:_bdex_indexer.index_terms(l:worklist, a:term_name, a:sort_regime)
     call s:ActivateCatalog("term", l:catalog)
 endfunction
 
-function! <SID>IndexTags(global)
-    if empty(a:global)
-        let l:worklist = ["%"]
-    else
-        let l:worklist = ""
-    endif
+function! <SID>IndexTags(bang)
+    let l:worklist = s:ComposeBufferTargetList(a:bang)
     let l:catalog = s:_bdex_indexer.index_tags(l:worklist)
     call s:ActivateCatalog("tags", l:catalog)
 endfunction
 
-function! <SID>IndexPatterns(pattern, global, sort_regime)
+function! <SID>IndexPatterns(pattern, bang, sort_regime)
     if empty(a:pattern)
         call s:_bdex_messenger.send_error("search pattern must be specified")
+        return
     endif
-    if empty(a:global)
-        let l:worklist = ["%"]
-    else
-        let l:worklist = ""
-    endif
+    let l:worklist = s:ComposeBufferTargetList(a:bang)
     let l:catalog = s:_bdex_indexer.index_pattern(l:worklist, a:pattern, a:sort_regime)
     call s:ActivateCatalog("pattern", l:catalog)
     if !exists("g:bdex_set_search_register") || g:bdex_set_search_register
