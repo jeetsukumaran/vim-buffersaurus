@@ -126,15 +126,23 @@ wV                  Split the previous window vertically and go to the current
                                                           *buffersaurus-options*
 OPTIONS AND SETTINGS~
 
+The following options can be used to customize the behavior of this plugin.
+
 g:bdex_sort_regime
+    Sets the default sort regime for results:
+        'fl': sort by filepath, then line number [default]
+        'fa': sort by filepath, then alphabetically by line text
+        'a' : sort alphabetically by line text
 
 g:bdex_move_wrap
+    If true [default], then result navigation wraps (i.e., moving to a 'next'
+    result when already on the last result goes to the first result, while
+    moving to a 'previous' result when already on the first result goes to the
+    last result). If false, then result navigation does not wrap.
 
 g:bdex_set_search_register
-
-g:bdex_set_search_highlight
-
-
+    If true [default], then ":Bdgrep {pattern}" assigns {pattern} to the
+    search register.
 
 
  vim:tw=78:ts=8:ft=help:norl:

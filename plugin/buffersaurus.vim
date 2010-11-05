@@ -353,7 +353,7 @@ function! s:NewBufferManager()
             endif
             if l:parts[2][4] == "+"
                 let l:info["is_modified"] = 1
-                let l:info["is_readerrror"] = 0
+                let l:info["is_readerror"] = 0
             elseif l:parts[2][4] == "x"
                 let l:info["is_modified"] = 0
                 let l:info["is_readerror"] = 0
@@ -454,7 +454,7 @@ function! s:NewIndexer()
     " set up element vocabulary
     let l:indexer["element_term_map"] = {
         \ "PyClass"     : '^\s*class\s\+[A-Za-z_]\i\+(.*',
-        \ "PyDef"  : '^\s*def\s\+[A-Za-z_]\i\+(.*',
+        \ "PyDef"       : '^\s*def\s\+[A-Za-z_]\i\+(.*',
         \ }
     if exists("g:bdex_element_term_map")
         call extend(bdex_element_term_map, g:bdex_element_term_map)
