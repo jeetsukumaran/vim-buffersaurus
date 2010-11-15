@@ -1906,6 +1906,7 @@ command! -nargs=0               Bdreboot        :let g:did_buffersaurus = 0  | :
 
 nnoremap <silent><Leader>[ :<C-U>Bdprev<CR>
 nnoremap <silent><Leader>] :<C-U>Bdnext<CR>
+nnoremap <silent><Leader>\| :<C-U>Bdopen<CR>
 " 1}}}
 
 " Restore State {{{1
