@@ -17,7 +17,7 @@ COMMANDS~
                     then the pattern will also be assigned to the search
                     register.
 
-:Bdc[ontents]!
+:Bdt[oc]!
                     Generate a "table of contents" type catalog for buffers,
                     based on the specific filetype of each buffer. If
                     'g:bdex_default_single_file' is not defined or true, then
@@ -30,7 +30,7 @@ COMMANDS~
                     |buffersaurus-filetype-patterns| for more information on
                     the patterns to be matched.
 
-:Bdt[terms]! {term-name}
+:Bdi[ndex]! {term-name}
                     Generate a catalog of occurrences of the term pattern
                     named {term-name} in buffers. If
                     'g:bdex_default_single_file' is not defined or true, then
