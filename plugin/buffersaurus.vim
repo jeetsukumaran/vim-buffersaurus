@@ -1011,21 +1011,6 @@ endfunction
 
 " 1}}}
 
-" TagCatalog {{{1
-" ============================================================================
-
-" The main workhorse pseudo-object is created here ...
-function! s:NewTagCatalog(catalog_domain, catalog_desc)
-    let l:catalog = s:NewCatalog(a:catalog_domain, a:catalog_desc, "")
-
-    function! l:catalog.map_buffer(buf_ref) dict
-    endfunction
-
-    return l:catalog
-endfunction
-
-" 1}}}
-
 " CatalogViewer {{{1
 " ==============================================================================
 
