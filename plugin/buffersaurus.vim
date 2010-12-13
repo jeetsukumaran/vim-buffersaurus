@@ -1207,15 +1207,16 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         noremap <buffer> <silent> <C-P>  :<C-U>call b:bdex_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
 
         " jump to next/prev file entry
-        noremap <buffer> <silent> }      :<C-U>call b:bdex_catalog_viewer.goto_file_start("n", 0, 1)<CR>
-        noremap <buffer> <silent> {      :<C-U>call b:bdex_catalog_viewer.goto_file_start("p", 0, 1)<CR>
+        noremap <buffer> <silent> ]f     :<C-U>call b:bdex_catalog_viewer.goto_file_start("n", 0, 1)<CR>
+        noremap <buffer> <silent> [f     :<C-U>call b:bdex_catalog_viewer.goto_file_start("p", 0, 1)<CR>
 
         """" Movement within buffer that updates the other window
 
         " show target line in other window, keeping catalog open and in focus
-        noremap <buffer> <silent> .       :call b:bdex_catalog_viewer.visit_target(1, 1, "")<CR>
-        noremap <buffer> <silent> >       :<C-U>call b:bdex_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
-        noremap <buffer> <silent> <       :<C-U>call b:bdex_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+        noremap <buffer> <silent> .           :call b:bdex_catalog_viewer.visit_target(1, 1, "")<CR>
+        noremap <buffer> <silent> <SPACE>     :<C-U>call b:bdex_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
+        noremap <buffer> <silent> <C-SPACE>   :<C-U>call b:bdex_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+        noremap <buffer> <silent> <C-@>       :<C-U>call b:bdex_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
 
         """" Movement that moves to the current search target
 
