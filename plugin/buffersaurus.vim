@@ -1,5 +1,5 @@
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-""  Buffersaurus dex
+""  Buffersaurus
 ""
 ""  Vim document buffer indexing and navigation utility
 ""
@@ -33,12 +33,12 @@ set cpo&vim
 " =============================================================================
 
 " TODO: wrap these up in checks for pre-defines
-let g:bdex_move_wrap = 1
+let g:buffersaurus_move_wrap = 1
 
 " Catalog Sort Regimes {{{2
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" (see below: `s:bdex_catalog_sort_regimes`
-let g:bdex_sort_regime = 'f'
+" (see below: `s:buffersaurus_catalog_sort_regimes`
+let g:buffersaurus_sort_regime = 'f'
 " 2}}}
 
 " endif
@@ -51,11 +51,11 @@ let g:bdex_sort_regime = 'f'
 "  Display column sizes {{{2
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 " Display columns.
-let s:bdex_lnum_field_width = 6
-let s:bdex_entry_label_field_width = 4
+let s:buffersaurus_lnum_field_width = 6
+let s:buffersaurus_entry_label_field_width = 4
 " TODO: populate the following based on user setting, as well as allow
 " abstraction from the actual Vim command (e.g., option "top" => "zt")
-let s:bdex_post_move_cmd = "normal! zt"
+let s:buffersaurus_post_move_cmd = "normal! zt"
 
 " 2}}}
 
@@ -77,7 +77,7 @@ let s:bdex_post_move_cmd = "normal! zt"
 "   `t`         : split VIEWPORT horizontally, with new split on the top
 "   `B`         : split SCREEN horizontally, with new split on the bottom
 "   `b`         : split VIEWPORT horizontally, with new split on the bottom
-let s:bdex_viewport_split_modes = {
+let s:buffersaurus_viewport_split_modes = {
             \ "d"   : "sp",
             \ "D"   : "sp",
             \ "N"   : "buffer",
@@ -95,8 +95,8 @@ let s:bdex_viewport_split_modes = {
 
 " Catalog Sort Regimes {{{2
 " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-let s:bdex_catalog_sort_regimes = ['fl', 'fa', 'a']
-let s:bdex_catalog_sort_regime_desc = {
+let s:buffersaurus_catalog_sort_regimes = ['fl', 'fa', 'a']
+let s:buffersaurus_catalog_sort_regime_desc = {
             \ 'fl' : ["F(L#)", "by filepath, then by line number"],
             \ 'fa' : ["F(A-Z)", "by filepath, then by line text"],
             \ 'a'  : ["A-Z", "by line text"],
@@ -364,36 +364,36 @@ function! s:NewBufferManager()
             let l:info["name"] = parts[3]
             let l:info["filepath"] = fnamemodify(l:info["name"], ":p")
             if !has_key(l:info, l:key)
-                throw s:_bdex_messenger.format_exception("Invalid key requested: '" . l:key . "'")
+                throw s:_buffersaurus_messenger.format_exception("Invalid key requested: '" . l:key . "'")
             endif
             let l:buffers_info[l:info[l:key]] = l:info
         endfor
         return l:buffers_info
     endfunction
 
-    " Returns split mode to use for a new Bdex viewport. If given an
+    " Returns split mode to use for a new Buffersaurus viewport. If given an
     " argument, this should be a single letter indicating the split policy. If
-    " no argument is given and `g:bdex_viewport_split_policy` exists, then it
-    " will be used. If `g:bdex_viewport_split_policy` does not exist, then a
+    " no argument is given and `g:buffersaurus_viewport_split_policy` exists, then it
+    " will be used. If `g:buffersaurus_viewport_split_policy` does not exist, then a
     " default will be used.
     function! l:buffer_manager.get_split_mode(...) dict
         if a:0 == 0
-            if exists("g:bdex_viewport_split_policy")
-                if has_key(s:bdex_viewport_split_modes, g:bdex_viewport_split_policy)
-                    return s:bdex_viewport_split_modes[g:bdex_viewport_split_policy]
+            if exists("g:buffersaurus_viewport_split_policy")
+                if has_key(s:buffersaurus_viewport_split_modes, g:buffersaurus_viewport_split_policy)
+                    return s:buffersaurus_viewport_split_modes[g:buffersaurus_viewport_split_policy]
                 else
-                    call s:_bdex_messenger.send_error("Unrecognized split mode specified by 'g:bdex_viewport_split_policy': " . g:bdex_viewport_split_policy)
+                    call s:_buffersaurus_messenger.send_error("Unrecognized split mode specified by 'g:buffersaurus_viewport_split_policy': " . g:buffersaurus_viewport_split_policy)
                 endif
             endif
         else
             let l:policy = a:1
-            if has_key(s:bdex_viewport_split_modes, l:policy[0])
-                return s:bdex_viewport_split_modes[l:policy[0]]
+            if has_key(s:buffersaurus_viewport_split_modes, l:policy[0])
+                return s:buffersaurus_viewport_split_modes[l:policy[0]]
             else
-                throw s:_bdex_messenger.format_exception("Unrecognized split mode: '" . l:policy . "')
+                throw s:_buffersaurus_messenger.format_exception("Unrecognized split mode: '" . l:policy . "')
             endif
         endif
-        return s:bdex_viewport_split_modes["B"]
+        return s:buffersaurus_viewport_split_modes["B"]
     endfunction
 
     " Detect filetype. From the 'taglist' plugin.
@@ -447,8 +447,8 @@ function! s:NewIndexer()
         \ "tex"         : '\C\\\(label\|\(sub\)*\(section\|paragraph\|part\)\)\>.*',
         \ "vim"         : '\C^\(fu\%[nction]\|com\%[mand]\|if\|wh\%[ile]\)\>.*',
         \ }
-    if exists("g:bdex_filetype_term_map")
-        call extend(l:indexer["filetype_term_map"], g:bdex_filetype_term_map)
+    if exists("g:buffersaurus_filetype_term_map")
+        call extend(l:indexer["filetype_term_map"], g:buffersaurus_filetype_term_map)
     endif
 
     " set up element vocabulary
@@ -456,8 +456,8 @@ function! s:NewIndexer()
         \ "PyClass"     : '^\s*class\s\+[A-Za-z_]\i\+(.*',
         \ "PyDef"       : '^\s*def\s\+[A-Za-z_]\i\+(.*',
         \ }
-    if exists("g:bdex_element_term_map")
-        call extend(bdex_element_term_map, g:bdex_element_term_map)
+    if exists("g:buffersaurus_element_term_map")
+        call extend(buffersaurus_element_term_map, g:buffersaurus_element_term_map)
     endif
 
     " Indexes all files given by the list `filepaths` for the regular
@@ -535,12 +535,12 @@ function! s:NewIndexer()
                 let l:term_id_matches = filter(keys(self.element_term_map),
                             \ "v:val =~ '" . a:term_id . ".*'")
             catch /E15:/
-                throw s:_bdex_messenger.format_exception("Invalid name: '" . a:term_id . "': ".v:exception)
+                throw s:_buffersaurus_messenger.format_exception("Invalid name: '" . a:term_id . "': ".v:exception)
             endtry
             if len(l:term_id_matches) > 1
-                throw s:_bdex_messenger.format_exception("Multiple matches for index pattern name starting with '".a:term_id."': ".join(l:term_id_matches, ", "))
+                throw s:_buffersaurus_messenger.format_exception("Multiple matches for index pattern name starting with '".a:term_id."': ".join(l:term_id_matches, ", "))
             elseif len(l:term_id_matches) == 0
-                throw s:_bdex_messenger.format_exception("Index pattern with name '" . a:term_id . "' not found")
+                throw s:_buffersaurus_messenger.format_exception("Index pattern with name '" . a:term_id . "' not found")
             end
             let l:pattern = self.element_term_map[l:term_id_matches[0]]
         else
@@ -559,7 +559,7 @@ function! s:NewIndexer()
         let l:cur_pos = getpos(".")
         let l:cur_buf_num = bufnr("%")
         if empty(a:buf_refs)
-            let l:req_buf_list = s:_bdex_buffer_manager.get_buf_nums(0)
+            let l:req_buf_list = s:_buffersaurus_buffer_manager.get_buf_nums(0)
         else
             let l:req_buf_list = []
             for l:buf_ref in a:buf_refs
@@ -574,11 +574,11 @@ function! s:NewIndexer()
         let l:work_list = []
         for l:buf_num in l:req_buf_list
             if !bufexists(l:buf_num)
-                throw s:_bdex_messenger.format_exception('Buffer does not exist: "' . l:buf_num . '"')
+                throw s:_buffersaurus_messenger.format_exception('Buffer does not exist: "' . l:buf_num . '"')
             elseif !buflisted(l:buf_num)
-                call s:_bdex_messenger.send_warning('Skipping unlisted buffer: [' . l:buf_num . '] "' . bufname(l:buf_num) . '"')
-            elseif !empty(getbufvar(l:buf_num, "is_bdex_buffer"))
-                call s:_bdex_messenger.send_warning('Skipping buffersaurus buffer: [' . l:buf_num . '] "' . bufname(l:buf_num) . '"')
+                call s:_buffersaurus_messenger.send_warning('Skipping unlisted buffer: [' . l:buf_num . '] "' . bufname(l:buf_num) . '"')
+            elseif !empty(getbufvar(l:buf_num, "is_buffersaurus_buffer"))
+                call s:_buffersaurus_messenger.send_warning('Skipping buffersaurus buffer: [' . l:buf_num . '] "' . bufname(l:buf_num) . '"')
             else
                 call add(l:work_list, l:buf_num)
                 if !bufloaded(l:buf_num)
@@ -605,20 +605,20 @@ endfunction
 function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
 
     " increment catalog counter, creating it if it does not already exist
-    if !exists("s:bdex_catalog_count")
-        let s:bdex_catalog_count = 1
+    if !exists("s:buffersaurus_catalog_count")
+        let s:buffersaurus_catalog_count = 1
     else
-        let s:bdex_catalog_count += 1
+        let s:buffersaurus_catalog_count += 1
     endif
 
     " initialize fields
     let l:var_name = a:catalog_domain
     let l:catalog = {
-                \ "catalog_id"          : s:bdex_catalog_count,
+                \ "catalog_id"          : s:buffersaurus_catalog_count,
                 \ "catalog_domain"      : a:catalog_domain,
                 \ "catalog_desc"        : a:catalog_desc,
-                \ "show_context"        : exists("g:bdex_" . l:var_name . "_show_context") ? g:bdex_{l:var_name}_show_context : 0,
-                \ "context_size"        : exists("g:bdex_" . l:var_name . "_context_size") ? g:bdex_{l:var_name}_context_size : [0, 5],
+                \ "show_context"        : exists("g:buffersaurus_" . l:var_name . "_show_context") ? g:buffersaurus_{l:var_name}_show_context : 0,
+                \ "context_size"        : exists("g:buffersaurus_" . l:var_name . "_context_size") ? g:buffersaurus_{l:var_name}_context_size : [0, 5],
                 \ "search_profile"      : [],
                 \ "matched_lines"       : [],
                 \ "search_history"      : [],
@@ -646,7 +646,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
             elseif a:000[l:carg] =! '+\d\+'
                 let l:context[1] = str2nr(a:000[l:carg][1:])
             else
-                call s:_bdex_messenger.send_error("Invalid argument ".l:carg.": ".a:000[l:carg])
+                call s:_buffersaurus_messenger.send_error("Invalid argument ".l:carg.": ".a:000[l:carg])
                 return
             endif
         endfor
@@ -698,7 +698,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     " repeat last search
     function l:catalog.rebuild() dict
         if empty(self.search_history)
-            raise s:_bdex_messenger.format_exception("Search history is empty")
+            raise s:_buffersaurus_messenger.format_exception("Search history is empty")
         endif
         let self.search_profile = []
         for search in self.search_history
@@ -793,8 +793,8 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
 
     " apply a sort regime
     function! l:catalog.apply_sort(regime) dict
-        if index(s:bdex_catalog_sort_regimes, a:regime) == - 1
-            throw s:_bdex_messenger.format_exception("Unrecognized sort regime: '" . a:regime . "'")
+        if index(s:buffersaurus_catalog_sort_regimes, a:regime) == - 1
+            throw s:_buffersaurus_messenger.format_exception("Unrecognized sort regime: '" . a:regime . "'")
         endif
         let self.sort_regime = a:regime
         return self.compile_entry_indexes()
@@ -802,12 +802,12 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
 
     " cycle through sort regimes
     function! l:catalog.cycle_sort_regime() dict
-        let l:cur_regime = index(s:bdex_catalog_sort_regimes, self.sort_regime)
+        let l:cur_regime = index(s:buffersaurus_catalog_sort_regimes, self.sort_regime)
         let l:cur_regime += 1
-        if l:cur_regime < 0 || l:cur_regime >= len(s:bdex_catalog_sort_regimes)
-            let self.sort_regime = s:bdex_catalog_sort_regimes[0]
+        if l:cur_regime < 0 || l:cur_regime >= len(s:buffersaurus_catalog_sort_regimes)
+            let self.sort_regime = s:buffersaurus_catalog_sort_regimes[0]
         else
-            let self.sort_regime = s:bdex_catalog_sort_regimes[l:cur_regime]
+            let self.sort_regime = s:buffersaurus_catalog_sort_regimes[l:cur_regime]
         endif
         return self.compile_entry_indexes()
     endfunction
@@ -823,7 +823,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
         elseif self.sort_regime == 'a'
             call sort(self.matched_lines, "s:compare_matched_lines_a")
         else
-            throw s:_bdex_messenger.format_exception("Unrecognized sort regime: '" . self.sort_regime . "'")
+            throw s:_buffersaurus_messenger.format_exception("Unrecognized sort regime: '" . self.sort_regime . "'")
         endif
         if self.sort_regime == 'a'
             call add(self.entry_indexes, ['', []])
@@ -848,7 +848,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
 
     " Describes catalog status.
     function! l:catalog.describe() dict
-        call s:_bdex_messenger.send_info(self.format_status_message() . " (sorted " . self.format_sort_status() . ")")
+        call s:_buffersaurus_messenger.send_info(self.format_status_message() . " (sorted " . self.format_sort_status() . ")")
     endfunction
 
     " Describes catalog status in detail.
@@ -915,7 +915,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
 
     " Composes message indicating sort regime of catalog.
     function! l:catalog.format_sort_status() dict
-        let l:message = get(s:bdex_catalog_sort_regime_desc, self.sort_regime, ["??", "in unspecified order"])[1]
+        let l:message = get(s:buffersaurus_catalog_sort_regime_desc, self.sort_regime, ["??", "in unspecified order"])[1]
         return l:message
     endfunction
 
@@ -1019,7 +1019,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " abort if catalog is empty
     " if len(a:catalog.matched_lines) == 0
-    "     throw s:_bdex_messenger.format_exception("CatalogViewer() called on empty catalog")
+    "     throw s:_buffersaurus_messenger.format_exception("CatalogViewer() called on empty catalog")
     " endif
 
     " initialize
@@ -1031,12 +1031,12 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     let l:catalog_viewer["buf_num"] = -1
     let l:catalog_viewer["buf_name"] = "[[buffersaurus]]"
     let l:catalog_viewer["title"] = "buffersaurus"
-    let l:bdex_bufs = s:_bdex_buffer_manager.find_buffers_with_var("is_bdex_buffer", 1)
-    if len(l:bdex_bufs) > 0
-        let l:catalog_viewer["buf_num"] = l:bdex_bufs[0]
+    let l:buffersaurus_bufs = s:_buffersaurus_buffer_manager.find_buffers_with_var("is_buffersaurus_buffer", 1)
+    if len(l:buffersaurus_bufs) > 0
+        let l:catalog_viewer["buf_num"] = l:buffersaurus_bufs[0]
     endif
     let l:catalog_viewer["jump_map"] = {}
-    let l:catalog_viewer["split_mode"] = s:_bdex_buffer_manager.get_split_mode()
+    let l:catalog_viewer["split_mode"] = s:_buffersaurus_buffer_manager.get_split_mode()
     let l:catalog_viewer["filter_regime"] = 0
     let l:catalog_viewer["filter_pattern"] = ""
 
@@ -1051,7 +1051,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             " buffer exists: activate a viewport on it according to the
             " spawning mode, re-rendering the buffer with the catalog if needed
             call self.activate_viewport()
-            if b:bdex_last_render_time < self.catalog.last_search_time || (a:0 > 0 && a:1) || b:bdex_catalog_viewer != self
+            if b:buffersaurus_last_render_time < self.catalog.last_search_time || (a:0 > 0 && a:1) || b:buffersaurus_catalog_viewer != self
                 call self.render_buffer()
             endif
         endif
@@ -1082,7 +1082,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             execute(l:bfwn . " wincmd w")
         else
             " create viewport
-            let self.split_mode = s:_bdex_buffer_manager.get_split_mode()
+            let self.split_mode = s:_buffersaurus_buffer_manager.get_split_mode()
             execute("silent keepalt keepjumps " . self.split_mode . " " . self.buf_num)
         endif
     endfunction
@@ -1100,20 +1100,20 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " 'Claims' a buffer by setting it to point at self.
     function! l:catalog_viewer.claim_buffer() dict
-        call setbufvar("%", "is_bdex_buffer", 1)
-        call setbufvar("%", "bdex_catalog_domain", self.catalog.catalog_domain)
-        call setbufvar("%", "bdex_catalog_viewer", self)
-        call setbufvar("%", "bdex_last_render_time", 0)
-        call setbufvar("%", "bdex_cur_line", 0)
+        call setbufvar("%", "is_buffersaurus_buffer", 1)
+        call setbufvar("%", "buffersaurus_catalog_domain", self.catalog.catalog_domain)
+        call setbufvar("%", "buffersaurus_catalog_viewer", self)
+        call setbufvar("%", "buffersaurus_last_render_time", 0)
+        call setbufvar("%", "buffersaurus_cur_line", 0)
     endfunction
 
     " 'Unclaims' a buffer by stripping all buffersaurus vars
     function! l:catalog_viewer.unclaim_buffer() dict
-        for l:var in ["is_bdex_buffer",
-                    \ "bdex_catalog_domain",
-                    \ "bdex_catalog_viewer",
-                    \ "bdex_last_render_time",
-                    \ "bdex_cur_line"
+        for l:var in ["is_buffersaurus_buffer",
+                    \ "buffersaurus_catalog_domain",
+                    \ "buffersaurus_catalog_viewer",
+                    \ "buffersaurus_last_render_time",
+                    \ "buffersaurus_cur_line"
                     \ ]
             if exists("b:" . l:var)
                 unlet b:{l:var}
@@ -1140,50 +1140,50 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         if has("syntax")
             syntax clear
             if self.catalog.is_show_context()
-                syn region BdexSyntaxFileGroup       matchgroup=BdexSyntaxFileGroupTitle start='^[^ ]'   keepend       end='\(^[^ ]\)\@=' fold
-                syn region BdexSyntaxContextedEntry  start='^  \['  end='\(^  \[\|^[^ ]\)\@=' fold containedin=BdexSyntaxFileGroup
-                syn region BdexSyntaxContextedKeyRow start='^  \[\s\{-}.\{-1,}\s\{-}\]' keepend oneline end='$' containedin=BdexSyntaxContextedEntry
-                syn region BdexSyntaxContextLines    start='^  \s*\d\+ :'  oneline end='$' containedin=BdexSyntaxContextedEntry
-                syn region BdexSyntaxMatchedLines    start='^  \s*\d\+ >'  oneline end='$'  containedin=BdexSyntaxContextedEntry
+                syn region BuffersaurusSyntaxFileGroup       matchgroup=BuffersaurusSyntaxFileGroupTitle start='^[^ ]'   keepend       end='\(^[^ ]\)\@=' fold
+                syn region BuffersaurusSyntaxContextedEntry  start='^  \['  end='\(^  \[\|^[^ ]\)\@=' fold containedin=BuffersaurusSyntaxFileGroup
+                syn region BuffersaurusSyntaxContextedKeyRow start='^  \[\s\{-}.\{-1,}\s\{-}\]' keepend oneline end='$' containedin=BuffersaurusSyntaxContextedEntry
+                syn region BuffersaurusSyntaxContextLines    start='^  \s*\d\+ :'  oneline end='$' containedin=BuffersaurusSyntaxContextedEntry
+                syn region BuffersaurusSyntaxMatchedLines    start='^  \s*\d\+ >'  oneline end='$'  containedin=BuffersaurusSyntaxContextedEntry
 
-                syn match BdexSyntaxFileGroupTitle            ':: .\+ :::'                          containedin=BdexSyntaxFileGroup
-                syn match BdexSyntaxKey                       '^  \zs\[\s\{-}.\{-1,}\s\{-}\]\ze'    containedin=BdexSyntaxcOntextedKeyRow
-                syn match BdexSyntaxContextedKeyFilename      '  \zs".\+"\ze, L\d\+-\d\+:'          containedin=BdexSyntaxContextedKeyRow
-                syn match BdexSyntaxContextedKeyLines         ', \zsL\d\+-\d\+\ze:'                 containedin=BdexSyntaxContextedKeyRow
-                syn match BdexSyntaxContextedKeyDesc          ': .*$'                               containedin=BdexSyntaxContextedKeyRow
+                syn match BuffersaurusSyntaxFileGroupTitle            ':: .\+ :::'                          containedin=BuffersaurusSyntaxFileGroup
+                syn match BuffersaurusSyntaxKey                       '^  \zs\[\s\{-}.\{-1,}\s\{-}\]\ze'    containedin=BuffersaurusSyntaxcOntextedKeyRow
+                syn match BuffersaurusSyntaxContextedKeyFilename      '  \zs".\+"\ze, L\d\+-\d\+:'          containedin=BuffersaurusSyntaxContextedKeyRow
+                syn match BuffersaurusSyntaxContextedKeyLines         ', \zsL\d\+-\d\+\ze:'                 containedin=BuffersaurusSyntaxContextedKeyRow
+                syn match BuffersaurusSyntaxContextedKeyDesc          ': .*$'                               containedin=BuffersaurusSyntaxContextedKeyRow
 
-                syn match BdexSyntaxContextLineNum            '^  \zs\s*\d\+\s*\ze:'                containedin=BdexSyntaxContextLines
-                syn match BdexSyntaxContextLineText           ': \zs.*\ze'                          containedin=BdexSyntaxContextLines
+                syn match BuffersaurusSyntaxContextLineNum            '^  \zs\s*\d\+\s*\ze:'                containedin=BuffersaurusSyntaxContextLines
+                syn match BuffersaurusSyntaxContextLineText           ': \zs.*\ze'                          containedin=BuffersaurusSyntaxContextLines
 
-                syn match BdexSyntaxMatchedLineNum            '^  \zs\s*\d\+\s*\ze>'                containedin=BdexSyntaxMatchedLines
-                syn match BdexSyntaxMatchedLineText           '> \zs.*\ze'                          containedin=BdexSyntaxMatchedLines
+                syn match BuffersaurusSyntaxMatchedLineNum            '^  \zs\s*\d\+\s*\ze>'                containedin=BuffersaurusSyntaxMatchedLines
+                syn match BuffersaurusSyntaxMatchedLineText           '> \zs.*\ze'                          containedin=BuffersaurusSyntaxMatchedLines
             else
-                syn match BdexSyntaxFileGroupTitle             '^\zs::: .* :::\ze.*$'                   nextgroup=BdexSyntaxKey
-                syn match BdexSyntaxKey                        '^  \zs\[\s\{-}.\{-1,}\s\{-}\]\ze'       nextgroup=BdexSyntaxUncontextedLineNum
-                syn match BdexSyntaxUncontextedLineNum         '\s\+\s*\zs\d\+\ze:'                nextgroup=BdexSyntaxUncontextedLineText
+                syn match BuffersaurusSyntaxFileGroupTitle             '^\zs::: .* :::\ze.*$'                   nextgroup=BuffersaurusSyntaxKey
+                syn match BuffersaurusSyntaxKey                        '^  \zs\[\s\{-}.\{-1,}\s\{-}\]\ze'       nextgroup=BuffersaurusSyntaxUncontextedLineNum
+                syn match BuffersaurusSyntaxUncontextedLineNum         '\s\+\s*\zs\d\+\ze:'                nextgroup=BuffersaurusSyntaxUncontextedLineText
             endif
-            highlight! link BdexSyntaxFileGroupTitle       Title
-            highlight! link BdexSyntaxKey                  Identifier
-            highlight! link BdexSyntaxContextedKeyFilename Comment
-            highlight! link BdexSyntaxContextedKeyLines    Comment
-            highlight! link BdexSyntaxContextedKeyDesc     Comment
-            highlight! link BdexSyntaxContextLineNum       Normal
-            highlight! link BdexSyntaxContextLineText      Normal
-            highlight! link BdexSyntaxMatchedLineNum       Question
-            highlight! link BdexSyntaxMatchedLineText      Question
-            highlight! link BdexSyntaxUncontextedLineNum   Question
-            highlight! link BdexSyntaxUncontextedLineText  Normal
-            highlight! def BdexCurrentEntry gui=reverse cterm=reverse term=reverse
+            highlight! link BuffersaurusSyntaxFileGroupTitle       Title
+            highlight! link BuffersaurusSyntaxKey                  Identifier
+            highlight! link BuffersaurusSyntaxContextedKeyFilename Comment
+            highlight! link BuffersaurusSyntaxContextedKeyLines    Comment
+            highlight! link BuffersaurusSyntaxContextedKeyDesc     Comment
+            highlight! link BuffersaurusSyntaxContextLineNum       Normal
+            highlight! link BuffersaurusSyntaxContextLineText      Normal
+            highlight! link BuffersaurusSyntaxMatchedLineNum       Question
+            highlight! link BuffersaurusSyntaxMatchedLineText      Question
+            highlight! link BuffersaurusSyntaxUncontextedLineNum   Question
+            highlight! link BuffersaurusSyntaxUncontextedLineText  Normal
+            highlight! def BuffersaurusCurrentEntry gui=reverse cterm=reverse term=reverse
         endif
     endfunction
 
     " Sets buffer commands.
     function! l:catalog_viewer.setup_buffer_commands() dict
-        command! -bang -nargs=* Bdfilter :call b:bdex_catalog_viewer.set_filter('<bang>', <q-args>)
-        augroup BdexCatalogViewer
+        command! -bang -nargs=* Bdfilter :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
+        augroup BuffersaurusCatalogViewer
             au!
-            autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,BufEnter,BufLeave <buffer> call b:bdex_catalog_viewer.highlight_current_line()
-            autocmd BufLeave <buffer> let s:_bdex_last_catalog_viewed = b:bdex_catalog_viewer
+            autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,BufEnter,BufLeave <buffer> call b:buffersaurus_catalog_viewer.highlight_current_line()
+            autocmd BufLeave <buffer> let s:_buffersaurus_last_catalog_viewed = b:buffersaurus_catalog_viewer
         augroup END
     endfunction
 
@@ -1191,45 +1191,45 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     function! l:catalog_viewer.setup_buffer_keymaps() dict
 
         """" Index buffer management
-        noremap <buffer> <silent> c       :call b:bdex_catalog_viewer.toggle_context()<CR>
-        noremap <buffer> <silent> s       :call b:bdex_catalog_viewer.cycle_sort_regime()<CR>
-        noremap <buffer> <silent> f       :call b:bdex_catalog_viewer.toggle_filter()<CR>
-        noremap <buffer> <silent> F       :call b:bdex_catalog_viewer.prompt_and_apply_filter()<CR>
-        noremap <buffer> <silent> u       :call b:bdex_catalog_viewer.rebuild_catalog()<CR>
-        noremap <buffer> <silent> <C-G>   :call b:bdex_catalog_viewer.catalog.describe()<CR>
-        noremap <buffer> <silent> g<C-G>  :call b:bdex_catalog_viewer.catalog.describe_detail()<CR>
-        noremap <buffer> <silent> q       :call b:bdex_catalog_viewer.quit_view()<CR>
+        noremap <buffer> <silent> c       :call b:buffersaurus_catalog_viewer.toggle_context()<CR>
+        noremap <buffer> <silent> s       :call b:buffersaurus_catalog_viewer.cycle_sort_regime()<CR>
+        noremap <buffer> <silent> f       :call b:buffersaurus_catalog_viewer.toggle_filter()<CR>
+        noremap <buffer> <silent> F       :call b:buffersaurus_catalog_viewer.prompt_and_apply_filter()<CR>
+        noremap <buffer> <silent> u       :call b:buffersaurus_catalog_viewer.rebuild_catalog()<CR>
+        noremap <buffer> <silent> <C-G>   :call b:buffersaurus_catalog_viewer.catalog.describe()<CR>
+        noremap <buffer> <silent> g<C-G>  :call b:buffersaurus_catalog_viewer.catalog.describe_detail()<CR>
+        noremap <buffer> <silent> q       :call b:buffersaurus_catalog_viewer.quit_view()<CR>
 
         """" Movement within buffer
 
         " jump to next/prev key entry
-        noremap <buffer> <silent> <C-N>  :<C-U>call b:bdex_catalog_viewer.goto_index_entry("n", 0, 1)<CR>
-        noremap <buffer> <silent> <C-P>  :<C-U>call b:bdex_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
+        noremap <buffer> <silent> <C-N>  :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 0, 1)<CR>
+        noremap <buffer> <silent> <C-P>  :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
 
         " jump to next/prev file entry
-        noremap <buffer> <silent> ]f     :<C-U>call b:bdex_catalog_viewer.goto_file_start("n", 0, 1)<CR>
-        noremap <buffer> <silent> [f     :<C-U>call b:bdex_catalog_viewer.goto_file_start("p", 0, 1)<CR>
+        noremap <buffer> <silent> ]f     :<C-U>call b:buffersaurus_catalog_viewer.goto_file_start("n", 0, 1)<CR>
+        noremap <buffer> <silent> [f     :<C-U>call b:buffersaurus_catalog_viewer.goto_file_start("p", 0, 1)<CR>
 
         """" Movement within buffer that updates the other window
 
         " show target line in other window, keeping catalog open and in focus
-        noremap <buffer> <silent> .           :call b:bdex_catalog_viewer.visit_target(1, 1, "")<CR>
-        noremap <buffer> <silent> <SPACE>     :<C-U>call b:bdex_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
-        noremap <buffer> <silent> <C-SPACE>   :<C-U>call b:bdex_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
-        noremap <buffer> <silent> <C-@>       :<C-U>call b:bdex_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+        noremap <buffer> <silent> .           :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
+        noremap <buffer> <silent> <SPACE>     :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
+        noremap <buffer> <silent> <C-SPACE>   :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+        noremap <buffer> <silent> <C-@>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
 
         """" Movement that moves to the current search target
 
         " go to target line in other window, keeping catalog open
-        noremap <buffer> <silent> <CR>  :call b:bdex_catalog_viewer.visit_target(1, 0, "")<CR>
-        noremap <buffer> <silent> o     :call b:bdex_catalog_viewer.visit_target(1, 0, "")<CR>
-        noremap <buffer> <silent> ws    :call b:bdex_catalog_viewer.visit_target(1, 0, "sb")<CR>
-        noremap <buffer> <silent> wv    :call b:bdex_catalog_viewer.visit_target(1, 0, "vert sb")<CR>
+        noremap <buffer> <silent> <CR>  :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "")<CR>
+        noremap <buffer> <silent> o     :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "")<CR>
+        noremap <buffer> <silent> ws    :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "sb")<CR>
+        noremap <buffer> <silent> wv    :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "vert sb")<CR>
 
         " open target line in other window, closing catalog
-        noremap <buffer> <silent> O     :call b:bdex_catalog_viewer.visit_target(0, 0, "")<CR>
-        noremap <buffer> <silent> wS    :call b:bdex_catalog_viewer.visit_target(0, 0, "sb")<CR>
-        noremap <buffer> <silent> wV    :call b:bdex_catalog_viewer.visit_target(0, 0, "vert sb")<CR>
+        noremap <buffer> <silent> O     :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "")<CR>
+        noremap <buffer> <silent> wS    :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "sb")<CR>
+        noremap <buffer> <silent> wV    :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "vert sb")<CR>
 
     endfunction
 
@@ -1240,7 +1240,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             setlocal foldmethod=syntax
             setlocal foldlevel=4
             setlocal foldenable
-            setlocal foldtext=BdexFoldText()
+            setlocal foldtext=BuffersaurusFoldText()
             " setlocal fillchars=fold:\ "
             setlocal fillchars=fold:.
         endif
@@ -1252,14 +1252,14 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             if a:pattern == "*" || a:pattern == ".*"
                 let self.filter_pattern = ""
                 let self.filter_regime = 0
-                call s:_bdex_messenger.send_info("clearing filter")
+                call s:_buffersaurus_messenger.send_info("clearing filter")
             else
                 if !empty(a:pattern)
                     let self.filter_pattern = a:pattern
                 endif
                 if !empty(self.filter_pattern)
                     let self.filter_regime = 1
-                    call s:_bdex_messenger.send_info("filtering for: " . self.filter_pattern)
+                    call s:_buffersaurus_messenger.send_info("filtering for: " . self.filter_pattern)
                 else
                     let l:ipattern = input("Enter filter pattern: ")
                     if empty(l:ipattern)
@@ -1274,13 +1274,13 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             if a:pattern == "*" || a:pattern == ".*"
                 let self.filter_pattern = ""
                 let self.filter_regime = 0
-                call s:_bdex_messenger.send_info("clearing filter")
+                call s:_buffersaurus_messenger.send_info("clearing filter")
             else
                 let self.filter_regime = 0
                 if empty(self.filter_pattern)
-                    call s:_bdex_messenger.send_info("filter pattern not set")
+                    call s:_buffersaurus_messenger.send_info("filter pattern not set")
                 else
-                    call s:_bdex_messenger.send_info("removing filter")
+                    call s:_buffersaurus_messenger.send_info("removing filter")
                 endif
             endif
         endif
@@ -1313,8 +1313,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Sets buffer status line.
     function! l:catalog_viewer.setup_buffer_statusline() dict
-        " setlocal statusline=\-buffersaurus\-\|\ %{BdexStatusLineCurrentLineInfo()}%<%=\|%{BdexStatusLineSortRegime()}\|%{BdexStatusLineFilterRegime()}
-        setlocal statusline=\-buffersaurus\-\|\ %{BdexStatusLineCurrentLineInfo()}%<%=\|%{BdexStatusLineSortRegime()}
+        " setlocal statusline=\-buffersaurus\-\|\ %{BuffersaurusStatusLineCurrentLineInfo()}%<%=\|%{BuffersaurusStatusLineSortRegime()}\|%{BuffersaurusStatusLineFilterRegime()}
+        setlocal statusline=\-buffersaurus\-\|\ %{BuffersaurusStatusLineCurrentLineInfo()}%<%=\|%{BuffersaurusStatusLineSortRegime()}
     endfunction
 
     " Populates the buffer with the catalog index.
@@ -1346,7 +1346,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
                 endif
             endfor
         endfor
-        let b:bdex_last_render_time = localtime()
+        let b:buffersaurus_last_render_time = localtime()
         try
             " remove extra last line
             execute("normal! GVX")
@@ -1374,7 +1374,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             for l:lnx in range(0, len(l:src_lines)-1)
                 let l:src_lnum = l:lnx + l:ln1
                 let l:rendered = "  "
-                " let l:rendered .= repeat(" ", s:bdex_entry_label_field_width + 1)
+                " let l:rendered .= repeat(" ", s:buffersaurus_entry_label_field_width + 1)
                 if l:src_lnum == l:lnum
                     let l:lborder = ">"
                     let l:rborder = ">"
@@ -1382,7 +1382,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
                     let l:lborder = ":"
                     let l:rborder = ":"
                 endif
-                let l:rendered .= s:Format_AlignRight(l:src_lnum, s:bdex_lnum_field_width, " ") . " " . l:rborder
+                let l:rendered .= s:Format_AlignRight(l:src_lnum, s:buffersaurus_lnum_field_width, " ") . " " . l:rborder
                 let l:rendered .= " ".l:src_lines[l:lnx]
                 call self.append_line(l:rendered, a:index, l:buf_num, l:src_lnum, l:col)
             endfor
@@ -1425,11 +1425,11 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     function! l:catalog_viewer.highlight_current_line()
-        " if line(".") != b:bdex_cur_line
-            let l:prev_line = b:bdex_cur_line
-            let b:bdex_cur_line = line(".")
+        " if line(".") != b:buffersaurus_cur_line
+            let l:prev_line = b:buffersaurus_cur_line
+            let b:buffersaurus_cur_line = line(".")
             3match none
-            exec '3match BdexCurrentEntry /^\%'. b:bdex_cur_line .'l.*/'
+            exec '3match BuffersaurusCurrentEntry /^\%'. b:buffersaurus_cur_line .'l.*/'
         " endif
     endfunction
 
@@ -1535,7 +1535,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         if !self.is_usable_viewport(winnr("#")) && self.first_usable_viewport() ==# -1
             " no appropriate viewport is available: create new using default
             " split mode
-            " TODO: maybe use g:bdex_viewport_split_policy?
+            " TODO: maybe use g:buffersaurus_viewport_split_policy?
             if empty(a:split_cmd)
                 return "sb"
             else
@@ -1586,7 +1586,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     function! l:catalog_viewer.visit_target(keep_catalog, refocus_catalog, split_cmd) dict
         let l:cur_line = line(".")
         if !has_key(l:self.jump_map, l:cur_line)
-            call s:_bdex_messenger.send_info("Not a valid navigation line")
+            call s:_buffersaurus_messenger.send_info("Not a valid navigation line")
             return 0
         endif
         let [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy] = self.jump_map[l:cur_line].target
@@ -1596,7 +1596,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         endif
         call self.visit_buffer(l:jump_to_buf_num, a:split_cmd)
         call setpos('.', [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy])
-        execute(s:bdex_post_move_cmd)
+        execute(s:buffersaurus_post_move_cmd)
         if a:keep_catalog && a:refocus_catalog && winnr() != l:cur_win_num
             execute(l:cur_win_num."wincmd w")
         endif
@@ -1608,7 +1608,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             let l:report .= 'File: "'  . expand(bufname(l:jump_to_buf_num)) . '"'
         endif
 
-        call s:_bdex_messenger.send_info(l:report)
+        call s:_buffersaurus_messenger.send_info(l:report)
     endfunction
 
     " Finds next line with occurrence of a rendered index
@@ -1638,7 +1638,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             let l:flags = ""
             " call cursor(line(".")+1, 0)
         endif
-        if g:bdex_move_wrap
+        if g:buffersaurus_move_wrap
             let l:flags .= "W"
         else
             let l:flags .= "w"
@@ -1654,9 +1654,9 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         endfor
         if l:lnum < 0
             if l:flags[0] == "b"
-                call s:_bdex_messenger.send_info("No previous results")
+                call s:_buffersaurus_messenger.send_info("No previous results")
             else
-                call s:_bdex_messenger.send_info("No more results")
+                call s:_buffersaurus_messenger.send_info("No more results")
             endif
             return 0
         else
@@ -1668,8 +1668,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     function! l:catalog_viewer.toggle_context() dict
         let self.catalog.show_context = !self.catalog.show_context
         let l:line = line(".")
-        if has_key(b:bdex_catalog_viewer.jump_map, l:line)
-            let l:jump_line = b:bdex_catalog_viewer.jump_map[l:line]
+        if has_key(b:buffersaurus_catalog_viewer.jump_map, l:line)
+            let l:jump_line = b:buffersaurus_catalog_viewer.jump_map[l:line]
             if l:jump_line.entry_index > 0
                 let l:entry_index = l:jump_line.entry_index
             elseif has_key(l:jump_line, "proxy_key")
@@ -1695,13 +1695,13 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     function! l:catalog_viewer.cycle_sort_regime() dict
         call self.catalog.cycle_sort_regime()
         call self.open(1)
-        call s:_bdex_messenger.send_info("sorted " . self.catalog.format_sort_status())
+        call s:_buffersaurus_messenger.send_info("sorted " . self.catalog.format_sort_status())
     endfunction
 
     " Rebuilds catalog.
     function! l:catalog_viewer.rebuild_catalog() dict
         call self.catalog.rebuild()
-        call s:_bdex_messenger.send_info("updated index: found " . self.catalog.format_status_message())
+        call s:_buffersaurus_messenger.send_info("updated index: found " . self.catalog.format_status_message())
         call self.open(1)
     endfunction
 
@@ -1716,7 +1716,7 @@ endfunction
 " =============================================================================
 
 function! s:ComposeBufferTargetList(bang)
-    if (exists('g:bdex_default_single_file') && g:bdex_default_single_file && empty(a:bang))
+    if (exists('g:buffersaurus_default_single_file') && g:buffersaurus_default_single_file && empty(a:bang))
                 \ || !empty(a:bang)
         return ["%"]
     else
@@ -1725,77 +1725,77 @@ function! s:ComposeBufferTargetList(bang)
 endfunction
 
 function! s:ActivateCatalog(domain, catalog)
-    let s:_bdex_last_catalog_built = a:catalog
-    let s:_bdex_last_catalog_viewed = a:catalog.open()
+    let s:_buffersaurus_last_catalog_built = a:catalog
+    let s:_buffersaurus_last_catalog_viewed = a:catalog.open()
     if a:catalog.size() > 0
         call a:catalog.describe()
     else
-        call s:_bdex_messenger.send_status("no matches")
+        call s:_buffersaurus_messenger.send_status("no matches")
     endif
 endfunction
 
 function! s:GetLastActiveCatalog()
-    if !exists("s:_bdex_last_catalog_viewed") && !exists("s:_bdex_last_catalog_built")
+    if !exists("s:_buffersaurus_last_catalog_viewed") && !exists("s:_buffersaurus_last_catalog_built")
         return 0
     endif
-    if exists("s:_bdex_last_catalog_viewed")
-        let l:catalog = s:_bdex_last_catalog_viewed.catalog
-    elseif exists("s:_bdex_last_catalog_built")
-        let l:catalog = s:_bdex_last_catalog_built.catalog
+    if exists("s:_buffersaurus_last_catalog_viewed")
+        let l:catalog = s:_buffersaurus_last_catalog_viewed.catalog
+    elseif exists("s:_buffersaurus_last_catalog_built")
+        let l:catalog = s:_buffersaurus_last_catalog_built.catalog
     endif
     return l:catalog
 endfunction
 
 function! <SID>IndexTerms(term_name, bang, sort_regime)
     let l:worklist = s:ComposeBufferTargetList(a:bang)
-    let l:catalog = s:_bdex_indexer.index_terms(l:worklist, a:term_name, a:sort_regime)
+    let l:catalog = s:_buffersaurus_indexer.index_terms(l:worklist, a:term_name, a:sort_regime)
     call s:ActivateCatalog("term", l:catalog)
 endfunction
 
 function! <SID>IndexTags(bang)
     let l:worklist = s:ComposeBufferTargetList(a:bang)
-    let l:catalog = s:_bdex_indexer.index_tags(l:worklist)
+    let l:catalog = s:_buffersaurus_indexer.index_tags(l:worklist)
     call s:ActivateCatalog("tags", l:catalog)
 endfunction
 
 function! <SID>IndexPatterns(pattern, bang, sort_regime)
     if empty(a:pattern)
-        call s:_bdex_messenger.send_error("search pattern must be specified")
+        call s:_buffersaurus_messenger.send_error("search pattern must be specified")
         return
     endif
     let l:worklist = s:ComposeBufferTargetList(a:bang)
-    let l:catalog = s:_bdex_indexer.index_pattern(l:worklist, a:pattern, a:sort_regime)
+    let l:catalog = s:_buffersaurus_indexer.index_pattern(l:worklist, a:pattern, a:sort_regime)
     call s:ActivateCatalog("pattern", l:catalog)
-    if !exists("g:bdex_set_search_register") || g:bdex_set_search_register
+    if !exists("g:buffersaurus_set_search_register") || g:buffersaurus_set_search_register
         let @/=a:pattern
     endif
-    " if !exists("g:bdex_set_search_highlight") || g:bdex_set_search_highlight
+    " if !exists("g:buffersaurus_set_search_highlight") || g:buffersaurus_set_search_highlight
     "     set hlsearch
     " endif
 endfunction
 
 function! <SID>OpenLastActiveCatalog()
-    if !exists("s:_bdex_last_catalog_viewed") && !exists("s:_bdex_last_catalog_built")
-        call s:_bdex_messenger.send_error("No index available for viewing")
+    if !exists("s:_buffersaurus_last_catalog_viewed") && !exists("s:_buffersaurus_last_catalog_built")
+        call s:_buffersaurus_messenger.send_error("No index available for viewing")
         return 0
-    elseif exists("s:_bdex_last_catalog_viewed")
-        call s:_bdex_last_catalog_viewed.open()
-    elseif exists("s:_bdex_last_catalog_built")
-        let s:_bdex_last_catalog_viewed = s:_bdex_last_catalog_built.open()
+    elseif exists("s:_buffersaurus_last_catalog_viewed")
+        call s:_buffersaurus_last_catalog_viewed.open()
+    elseif exists("s:_buffersaurus_last_catalog_built")
+        let s:_buffersaurus_last_catalog_viewed = s:_buffersaurus_last_catalog_built.open()
     endif
     return 1
 endfunction
 
 function! <SID>GotoEntry(direction)
     if <SID>OpenLastActiveCatalog()
-        call s:_bdex_last_catalog_viewed.goto_index_entry(a:direction, 1, 0)
+        call s:_buffersaurus_last_catalog_viewed.goto_index_entry(a:direction, 1, 0)
     endif
 endfunction
 
 function! <SID>ShowCatalogStatus(full)
     let l:catalog = s:GetLastActiveCatalog()
     if type(l:catalog) == type(0) && l:catalog == 0
-        call s:_bdex_messenger.send_error("No index available")
+        call s:_buffersaurus_messenger.send_error("No index available")
     elseif empty(a:full)
         call l:catalog.describe()
     else
@@ -1808,19 +1808,19 @@ endfunction
 " Global Functions {{{1
 " ==============================================================================
 
-function! BdexStatusLineCurrentLineInfo()
-    if !exists("b:bdex_catalog_viewer")
+function! BuffersaurusStatusLineCurrentLineInfo()
+    if !exists("b:buffersaurus_catalog_viewer")
         return "[not a valid catalog]"
     endif
     let l:line = line(".")
     let l:status_line = ""
-    if b:bdex_catalog_viewer.filter_regime && !empty(b:bdex_catalog_viewer.filter_pattern)
+    if b:buffersaurus_catalog_viewer.filter_regime && !empty(b:buffersaurus_catalog_viewer.filter_pattern)
         let l:status_line .= "*filtered* | "
     endif
-    if has_key(b:bdex_catalog_viewer.jump_map, l:line)
-        let l:jump_line = b:bdex_catalog_viewer.jump_map[l:line]
+    if has_key(b:buffersaurus_catalog_viewer.jump_map, l:line)
+        let l:jump_line = b:buffersaurus_catalog_viewer.jump_map[l:line]
         if l:jump_line.entry_index >= 0
-            let l:status_line .= string(l:jump_line.entry_index + 1) . " of " . b:bdex_catalog_viewer.catalog.size()
+            let l:status_line .= string(l:jump_line.entry_index + 1) . " of " . b:buffersaurus_catalog_viewer.catalog.size()
             let l:status_line .= " | "
             let l:status_line .= 'File: "' . expand(bufname(l:jump_line.target[0]))
             let l:status_line .= '" (L:' . l:jump_line.target[1] . ', C:' . l:jump_line.target[2] . ')'
@@ -1833,19 +1833,19 @@ function! BdexStatusLineCurrentLineInfo()
     return l:status_line
 endfunction
 
-function! BdexStatusLineSortRegime()
-    if exists("b:bdex_catalog_viewer")
-        let l:sort_desc = get(s:bdex_catalog_sort_regime_desc, b:bdex_catalog_viewer.catalog.sort_regime, ["??", "invalid sort"])
+function! BuffersaurusStatusLineSortRegime()
+    if exists("b:buffersaurus_catalog_viewer")
+        let l:sort_desc = get(s:buffersaurus_catalog_sort_regime_desc, b:buffersaurus_catalog_viewer.catalog.sort_regime, ["??", "invalid sort"])
         return "sort: " . l:sort_desc[0] . ""
     else
         return ""
     endif
 endfunction
 
-function! BdexStatusLineFilterRegime()
-    if exists("b:bdex_catalog_viewer")
-        if b:bdex_catalog_viewer.filter_regime && !empty(b:bdex_catalog_viewer.filter_pattern)
-            return "filter: /" . b:bdex_catalog_viewer.filter_pattern . "/"
+function! BuffersaurusStatusLineFilterRegime()
+    if exists("b:buffersaurus_catalog_viewer")
+        if b:buffersaurus_catalog_viewer.filter_regime && !empty(b:buffersaurus_catalog_viewer.filter_pattern)
+            return "filter: /" . b:buffersaurus_catalog_viewer.filter_pattern . "/"
         else
             return "filter: OFF"
         endif
@@ -1854,44 +1854,44 @@ function! BdexStatusLineFilterRegime()
     endif
 endfunction
 
-function! BdexFoldText()
+function! BuffersaurusFoldText()
     return substitute(getline(v:foldstart), '^\s\{-1,}\(\[\s*\d\+\s*\]\) .\{-1,}, L\d\+-\d\+: ', '\1 ', "g")
 endfunction
 " 1}}}
 
 " Global Initialization {{{1
 " ==============================================================================
-if exists("s:_bdex_buffer_manager")
-    unlet s:_bdex_buffer_manager
+if exists("s:_buffersaurus_buffer_manager")
+    unlet s:_buffersaurus_buffer_manager
 endif
-let s:_bdex_buffer_manager = s:NewBufferManager()
-if exists("s:_bdex_messenger")
-    unlet s:_bdex_messenger
+let s:_buffersaurus_buffer_manager = s:NewBufferManager()
+if exists("s:_buffersaurus_messenger")
+    unlet s:_buffersaurus_messenger
 endif
-let s:_bdex_messenger = s:NewMessenger("")
-if exists("s:_bdex_indexer")
-    unlet s:_bdex_indexer
+let s:_buffersaurus_messenger = s:NewMessenger("")
+if exists("s:_buffersaurus_indexer")
+    unlet s:_buffersaurus_indexer
 endif
-let s:_bdex_indexer = s:NewIndexer()
+let s:_buffersaurus_indexer = s:NewIndexer()
 " 1}}}
 
 " Public Command and Key Maps {{{1
 " ==============================================================================
-command! -bang -nargs=*         Bdgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
-command! -bang -nargs=0         Bdtoc           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
-command! -bang -nargs=1         Bdindex         :call <SID>IndexTerms('<args>', '<bang>', 'fl')
-command! -nargs=0               Bdopen          :call <SID>OpenLastActiveCatalog()
-command! -range -bang -nargs=0  Bdnext          :call <SID>GotoEntry("n")
-command! -range -bang -nargs=0  Bdprev          :call <SID>GotoEntry("p")
-command! -bang -nargs=0         Bdstatus        :call <SID>ShowCatalogStatus('<bang>')
+command! -bang -nargs=*         Bfgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
+command! -bang -nargs=0         Bftoc           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -bang -nargs=1         Bfindex         :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -nargs=0               Bfopen          :call <SID>OpenLastActiveCatalog()
+command! -range -bang -nargs=0  Bfnext          :call <SID>GotoEntry("n")
+command! -range -bang -nargs=0  Bfprev          :call <SID>GotoEntry("p")
+command! -bang -nargs=0         Bfstatus        :call <SID>ShowCatalogStatus('<bang>')
 
 " (development/debugging) "
-let g:bdex_plugin_path = expand('<sfile>:p')
-command! -nargs=0               Bdreboot        :let g:did_buffersaurus = 0  | :execute("so " . g:bdex_plugin_path)
+let g:buffersaurus_plugin_path = expand('<sfile>:p')
+command! -nargs=0               Bfreboot        :let g:did_buffersaurus = 0  | :execute("so " . g:buffersaurus_plugin_path)
 
-nnoremap <silent><Leader>[ :<C-U>Bdprev<CR>
-nnoremap <silent><Leader>] :<C-U>Bdnext<CR>
-nnoremap <silent><Leader>\| :<C-U>Bdopen<CR>
+nnoremap <silent><Leader>[ :<C-U>Bfprev<CR>
+nnoremap <silent><Leader>] :<C-U>Bfnext<CR>
+nnoremap <silent><Leader>\| :<C-U>Bfopen<CR>
 " 1}}}
 
 " Restore State {{{1
