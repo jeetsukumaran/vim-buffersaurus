@@ -1877,21 +1877,21 @@ let s:_buffersaurus_indexer = s:NewIndexer()
 
 " Public Command and Key Maps {{{1
 " ==============================================================================
-command! -bang -nargs=*         Bfgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
-command! -bang -nargs=0         Bftoc           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
-command! -bang -nargs=1         Bfindex         :call <SID>IndexTerms('<args>', '<bang>', 'fl')
-command! -nargs=0               Bfopen          :call <SID>OpenLastActiveCatalog()
-command! -range -bang -nargs=0  Bfnext          :call <SID>GotoEntry("n")
-command! -range -bang -nargs=0  Bfprev          :call <SID>GotoEntry("p")
-command! -bang -nargs=0         Bfstatus        :call <SID>ShowCatalogStatus('<bang>')
+command! -bang -nargs=*         Bdgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
+command! -bang -nargs=0         Bdtoc           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -bang -nargs=1         Bdindex         :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -nargs=0               Bdopen          :call <SID>OpenLastActiveCatalog()
+command! -range -bang -nargs=0  Bdnext          :call <SID>GotoEntry("n")
+command! -range -bang -nargs=0  Bdprev          :call <SID>GotoEntry("p")
+command! -bang -nargs=0         Bdstatus        :call <SID>ShowCatalogStatus('<bang>')
 
 " (development/debugging) "
 let g:buffersaurus_plugin_path = expand('<sfile>:p')
-command! -nargs=0               Bfreboot        :let g:did_buffersaurus = 0  | :execute("so " . g:buffersaurus_plugin_path)
+command! -nargs=0               Bdreboot        :let g:did_buffersaurus = 0  | :execute("so " . g:buffersaurus_plugin_path)
 
-nnoremap <silent><Leader>[ :<C-U>Bfprev<CR>
-nnoremap <silent><Leader>] :<C-U>Bfnext<CR>
-nnoremap <silent><Leader>\| :<C-U>Bfopen<CR>
+nnoremap <silent><Leader>[ :<C-U>Bdprev<CR>
+nnoremap <silent><Leader>] :<C-U>Bdnext<CR>
+nnoremap <silent><Leader>\| :<C-U>Bdopen<CR>
 " 1}}}
 
 " Restore State {{{1

@@ -4,61 +4,61 @@
                                                           *buffersaurus-commands*
 COMMANDS~
 
-:Bfg[rep][!] {pattern}
+:Bdg[rep][!] {pattern}
                     Search buffer(s) for the regular expression |pattern|
-                    given by {pattern}. If 'g:bdex_default_single_file' is not
+                    given by {pattern}. If 'g:buffersaurus_default_single_file' is not
                     defined or true, then all buffers will be searched unless
                     the 'bang' operator is given, in which case the search
                     will be limitd to the current buffer. Otherwise, if
-                    'g:bdex_default_single_file' is defined and true, then
+                    'g:buffersaurus_default_single_file' is defined and true, then
                     only the current buffer will be searched unless the bang
                     operator is given, in which the search will be across all
-                    buffers. If 'g:bdex_set_search_register' is not false (0),
+                    buffers. If 'g:buffersaurus_set_search_register' is not false (0),
                     then the pattern will also be assigned to the search
                     register.
 
-:Bft[oc]!
+:Bdt[oc]!
                     Generate a "table of contents" type catalog for buffers,
                     based on the specific filetype of each buffer. If
-                    'g:bdex_default_single_file' is not defined or true, then
+                    'g:buffersaurus_default_single_file' is not defined or true, then
                     all buffers will be searched unless the 'bang' operator is
                     given, in which case the search will be limitd to the
-                    current buffer. Otherwise, if 'g:bdex_default_single_file'
+                    current buffer. Otherwise, if 'g:buffersaurus_default_single_file'
                     is defined and true, then only the current buffer will be
                     searched unless the bang operator is given, in which the
                     search will be across all buffers. See
                     |buffersaurus-filetype-patterns| for more information on
                     the patterns to be matched.
 
-:Bfi[ndex]! {term-name}
+:Bdi[ndex]! {term-name}
                     Generate a catalog of occurrences of the term pattern
                     named {term-name} in buffers. If
-                    'g:bdex_default_single_file' is not defined or true, then
+                    'g:buffersaurus_default_single_file' is not defined or true, then
                     all buffers will be searched unless the 'bang' operator is
                     given, in which case the search will be limitd to the
-                    current buffer. Otherwise, if 'g:bdex_default_single_file'
+                    current buffer. Otherwise, if 'g:buffersaurus_default_single_file'
                     is defined and true, then only the current buffer will be
                     searched unless the bang operator is given, in which the
                     search will be across all buffers. See
                     |buffersaurus-term-patterns| for information on defining
                     and using terms.
 
-:Bfo[pen]
+:Bdo[pen]
                     (Re-)open the most recent catalog.
 
-:Bfn[ext]
+:Bdn[ext]
                     Go to the next matched line from the most recent catalog
                     (like |:cnext|).
 
-:Bfp[rev]
+:Bdp[rev]
                     Go to the previous matched line from the most recent
                     catalog (like |:cprev|).
 
-:Bfs[tatus][!]
+:Bds[tatus][!]
                     Show brief (without '!') or detailed (with '!') description
                     of the most recent catalog.
 
-:Bff[ilter][!] [pattern]
+:Bdf[ilter][!] [pattern]
                     Without '!': filter results to only show lines matching
                     [pattern]. If [pattern] is not given, then the previous
                     filter pattern will be used. If there is no previous
@@ -128,20 +128,20 @@ OPTIONS AND SETTINGS~
 
 The following options can be used to customize the behavior of this plugin.
 
-g:bdex_sort_regime
+g:buffersaurus_sort_regime
     Sets the default sort regime for results:
         'fl': sort by filepath, then line number [default]
         'fa': sort by filepath, then alphabetically by line text
         'a' : sort alphabetically by line text
 
-g:bdex_move_wrap
+g:buffersaurus_move_wrap
     If true [default], then result navigation wraps (i.e., moving to a 'next'
     result when already on the last result goes to the first result, while
     moving to a 'previous' result when already on the first result goes to the
     last result). If false, then result navigation does not wrap.
 
-g:bdex_set_search_register
-    If true [default], then ":Bfgrep {pattern}" assigns {pattern} to the
+g:buffersaurus_set_search_register
+    If true [default], then ":Bdgrep {pattern}" assigns {pattern} to the
     search register.
 
 
