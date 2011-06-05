@@ -1198,7 +1198,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         noremap <buffer> <silent> u       :call b:buffersaurus_catalog_viewer.rebuild_catalog()<CR>
         noremap <buffer> <silent> <C-G>   :call b:buffersaurus_catalog_viewer.catalog.describe()<CR>
         noremap <buffer> <silent> g<C-G>  :call b:buffersaurus_catalog_viewer.catalog.describe_detail()<CR>
-        noremap <buffer> <silent> q       :call b:buffersaurus_catalog_viewer.quit_view()<CR>
+        noremap <buffer> <silent> q       :call b:buffersaurus_catalog_viewer.close()<CR>
 
         """" Movement within buffer
 
@@ -1420,7 +1420,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Close and quit the viewer.
-    function! l:catalog_viewer.quit_view() dict
+    function! l:catalog_viewer.close() dict
         execute("bwipe " . self.buf_num)
     endfunction
 
@@ -1592,7 +1592,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         let [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy] = self.jump_map[l:cur_line].target
         let l:cur_win_num = winnr()
         if !a:keep_catalog
-            call self.quit_view()
+            call self.close()
         endif
         call self.visit_buffer(l:jump_to_buf_num, a:split_cmd)
         call setpos('.', [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy])
