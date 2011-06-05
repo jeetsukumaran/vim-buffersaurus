@@ -1,6 +1,25 @@
 *buffersaurus.txt*	Buffer indexing and navigation plugin.
 
 ===============================================================================
+                                             *buffersaurus* *buffersaurus-contents*
+CONTENTS~
+
+    1. Introduction ....................... |buffersaurus-introduction|
+    2. Commands ........................... |buffersaurus-commands|
+    3. Key Mappings ....................... |buffersaurus-keys|
+    4. Options and Settings ............... |buffersaurus-options|
+~
+===============================================================================
+                                                      *buffersaurus-introduction*
+INTRODUCTION~
+
+Buffersaurus is a plugin for searching and indexing the contents of buffers
+for regular expression patterns or collection of regular expression patterns.
+Results are displayed in separate buffer, and can be (optionally) viewed with
+user-specifiable lines of context (i.e., a number of lines before and/or after
+the line matching the search pattern).
+~
+===============================================================================
                                                           *buffersaurus-commands*
 COMMANDS~
 
@@ -70,7 +89,7 @@ COMMANDS~
 
 ===============================================================================
                                                              *buffersaurus-keys*
-CATALOG VIEWER KEY MAPS~
+KEY MAPPINGS (CATALOG VIEWER)~
 
 -------------------------------------------------------------------------------
 Index Management~
@@ -143,6 +162,5 @@ g:buffersaurus_move_wrap
 g:buffersaurus_set_search_register
     If true [default], then ":Bdgrep {pattern}" assigns {pattern} to the
     search register.
-
 
  vim:tw=78:ts=8:ft=help:norl:
