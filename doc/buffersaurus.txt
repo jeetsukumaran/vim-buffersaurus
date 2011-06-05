@@ -132,6 +132,8 @@ ws                  Split the previous window, switch focus, and go to the
                     current entry.
 wv                  Split the previous window vertically, switch focus, and go
                     to the current entry.
+t                   Open the current entry in a new tab page, keeping the
+                    catalog open.
 
 -------------------------------------------------------------------------------
 Jumping to the Matched Line, Closing the Catalog~
@@ -140,6 +142,8 @@ O                   Close catalog and go to the current entry.
 wS                  Split the previous window and go to the current entry.
 wV                  Split the previous window vertically and go to the current
                     entry.
+T                   Open the current entry in a new tab page, closing the
+                    catalog.
 
 ===============================================================================
                                                           *buffersaurus-options*

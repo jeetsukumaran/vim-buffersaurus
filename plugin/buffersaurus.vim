@@ -1225,11 +1225,14 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         noremap <buffer> <silent> o     :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "")<CR>
         noremap <buffer> <silent> ws    :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "sb")<CR>
         noremap <buffer> <silent> wv    :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "vert sb")<CR>
+        noremap <buffer> <silent> t     :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "tab sb")<CR>
 
         " open target line in other window, closing catalog
         noremap <buffer> <silent> O     :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "")<CR>
         noremap <buffer> <silent> wS    :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "sb")<CR>
         noremap <buffer> <silent> wV    :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "vert sb")<CR>
+        noremap <buffer> <silent> T     :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "tab sb")<CR>
+
 
     endfunction
 
