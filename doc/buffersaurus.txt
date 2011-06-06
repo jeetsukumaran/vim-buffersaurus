@@ -155,19 +155,35 @@ OPTIONS AND SETTINGS~
 
 The following options can be used to customize the behavior of this plugin.
 
-g:buffersaurus_sort_regime
-    Sets the default sort regime for results:
-        'fl': sort by filepath, then line number [default]
-        'fa': sort by filepath, then alphabetically by line text
-        'a' : sort alphabetically by line text
+g:buffersaurus_viewport_split_policy~
+    Determines how a new Buffersaurus window will be opened. Can be one of the
+    following values:
+        'd'   : user-specified Vim default
+        'D'   : user-specified Vim default
+        'N'   : no split, reuse current buffer
+        'n'   : no split, reuse current buffer
+        'L'   : vertical left (full screen height)
+        'l'   : vertical left (within current window)
+        'R'   : vertical right (full screen height)
+        'r'   : vertical right (within current window)
+        'T'   : horizontal top (full screen width)
+        't'   : horizontal top (within current window)
+        'B'   : horizontal bottom (full screen width)
+        'b'   : horizontal bottom (within current window)
 
-g:buffersaurus_move_wrap
+g:buffersaurus_sort_regime~
+    Sets the default sort regime for results:
+        'fl'  : sort by filepath, then line number [default]
+        'fa'  : sort by filepath, then alphabetically by line text
+        'a'   : sort alphabetically by line text
+
+g:buffersaurus_move_wrap~
     If true [default], then result navigation wraps (i.e., moving to a 'next'
     result when already on the last result goes to the first result, while
     moving to a 'previous' result when already on the first result goes to the
     last result). If false, then result navigation does not wrap.
 
-g:buffersaurus_set_search_register
+g:buffersaurus_set_search_register~
     If true [default], then ":Bdgrep {pattern}" assigns {pattern} to the
     search register.
 
