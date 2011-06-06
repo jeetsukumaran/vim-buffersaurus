@@ -8,7 +8,7 @@ CONTENTS~
     2. Commands ........................... |buffersaurus-commands|
     3. Key Mappings ....................... |buffersaurus-keys|
     4. Options and Settings ............... |buffersaurus-options|
-~
+
 ===============================================================================
                                                       *buffersaurus-introduction*
 INTRODUCTION~
@@ -18,7 +18,7 @@ for regular expression patterns or collection of regular expression patterns.
 Results are displayed in separate buffer, and can be (optionally) viewed with
 user-specifiable lines of context (i.e., a number of lines before and/or after
 the line matching the search pattern).
-~
+
 ===============================================================================
                                                           *buffersaurus-commands*
 COMMANDS~
@@ -91,8 +91,12 @@ COMMANDS~
                                                              *buffersaurus-keys*
 KEY MAPPINGS (CATALOG VIEWER)~
 
+Search results are stored a "catalog", and displayed in special buffer
+referred to as a "catalog viewer".  The following key mappings are available
+in the catalog viewer.
+
 -------------------------------------------------------------------------------
-Index Management~
+Catalog Management~
 
 c                   Toggle contexted view on/off (|buffersaurus-context|)
 s                   Cycle through sort regimes (|buffersaurus-sort|).
@@ -106,7 +110,7 @@ g<C-G>              Detailed status of index/catalog (|buffersaurus-status|).
 q                   Quit the index/catalog window.
 
 -------------------------------------------------------------------------------
-Movement Within the Catalog~
+Movement Within the Catalog Viewer~
 
 <C-N>               Go to the next index entry.
 <C-P>               Go to the previous index entry.
@@ -114,9 +118,9 @@ Movement Within the Catalog~
 [f                  Go the previous file entry.
 
 -------------------------------------------------------------------------------
-Movement Within the Catalog that Updates the Other Window~
+Previewing Results Without Leaving the Catalog~
 
-.                   Show the current entry in the previous window.
+p                   Show the current entry in the previous window.
 <SPACE>             Go to the next entry and show it in the previous window.
 <C-SPACE>           Go to the previous entry and show it in the previous
                     window.
@@ -136,7 +140,7 @@ t                   Open the current entry in a new tab page, keeping the
                     catalog open.
 
 -------------------------------------------------------------------------------
-Jumping to the Matched Line, Closing the Catalog~
+Closing the Catalog and Jumping to the Matched Line~
 
 O                   Close catalog and go to the current entry.
 wS                  Split the previous window and go to the current entry.

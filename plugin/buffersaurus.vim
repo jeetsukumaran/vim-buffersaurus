@@ -1,4 +1,5 @@
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 ""  Buffersaurus
 ""
 ""  Vim document buffer indexing and navigation utility
@@ -1213,7 +1214,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         """" Movement within buffer that updates the other window
 
         " show target line in other window, keeping catalog open and in focus
-        noremap <buffer> <silent> .           :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
+        noremap <buffer> <silent> p           :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
         noremap <buffer> <silent> <SPACE>     :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
         noremap <buffer> <silent> <C-SPACE>   :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
         noremap <buffer> <silent> <C-@>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
