@@ -78,14 +78,14 @@ COMMANDS~
                     of the most recent catalog.
 
 :Bsf[ilter][!] [pattern]
-                    Without '!': filter results to only show lines matching
-                    [pattern]. If [pattern] is not given, then the previous
-                    filter pattern will be used. If there is no previous
-                    filter pattern, then the user will be prompted for a new
-                    pattern. With '!': remove filter. In all cases if
-                    [pattern] is '*' or '.*', then the saved pattern will be
-                    cleared and the filter removed. Only available when in a
-                    catalog buffer.
+                    [Only available when inside a Buffergator catalog viewer
+                    buffer] Without '!': filter results to only show lines
+                    matching [pattern]. If [pattern] is not given, then the
+                    previous filter pattern will be used. If there is no
+                    previous filter pattern, then the user will be prompted
+                    for a new pattern. With '!': remove filter. In all cases
+                    if [pattern] is '*' or '.*', then the saved pattern will
+                    be cleared and the filter removed.
 
 ===============================================================================
                                                              *buffersaurus-keys*

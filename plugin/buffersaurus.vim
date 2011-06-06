@@ -1167,7 +1167,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Sets buffer commands.
     function! l:catalog_viewer.setup_buffer_commands() dict
-        command! -bang -nargs=* Bdfilter :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
+        command! -bang -nargs=* Bsfilter :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
         augroup BuffersaurusCatalogViewer
             au!
             autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,BufEnter,BufLeave <buffer> call b:buffersaurus_catalog_viewer.highlight_current_line()
