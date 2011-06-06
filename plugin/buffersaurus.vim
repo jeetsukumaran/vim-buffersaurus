@@ -1305,7 +1305,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     " Sets buffer status line.
     function! l:catalog_viewer.setup_buffer_statusline() dict
         " setlocal statusline=\-buffersaurus\-\|\ %{BuffersaurusStatusLineCurrentLineInfo()}%<%=\|%{BuffersaurusStatusLineSortRegime()}\|%{BuffersaurusStatusLineFilterRegime()}
-        setlocal statusline=\-buffersaurus\-\|\ %{BuffersaurusStatusLineCurrentLineInfo()}%<%=\|%{BuffersaurusStatusLineSortRegime()}
+        setlocal statusline=[[buffersaurus]]%{BuffersaurusStatusLineCurrentLineInfo()}%<%=\|%{BuffersaurusStatusLineSortRegime()}
     endfunction
 
     " Populates the buffer with the catalog index.
@@ -1804,7 +1804,7 @@ function! BuffersaurusStatusLineCurrentLineInfo()
         return "[not a valid catalog]"
     endif
     let l:line = line(".")
-    let l:status_line = ""
+    let l:status_line = " | "
     if b:buffersaurus_catalog_viewer.filter_regime && !empty(b:buffersaurus_catalog_viewer.filter_pattern)
         let l:status_line .= "*filtered* | "
     endif
