@@ -17,7 +17,7 @@ Buffersaurus is a plugin for searching and indexing the contents of buffers
 for regular expression patterns or collection of regular expression patterns.
 Results are displayed in separate buffer, and can be (optionally) viewed with
 user-specifiable lines of context (i.e., a number of lines before and/or after
-the line matching the search pattern).
+the line matching the search pattern) or filtered for specific patterns.
 
 ===============================================================================
                                                           *buffersaurus-commands*
