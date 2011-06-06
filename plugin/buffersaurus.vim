@@ -32,8 +32,8 @@ set cpo&vim
 
 " Global Plugin Options {{{1
 " =============================================================================
-if !exists("g:buffersaurus_move_wrap")
-    let g:buffersaurus_move_wrap  = 1
+if !exists("g:buffersaurus_autodismiss_on_select")
+    let g:buffersaurus_autodismiss_on_select = 1
 endif
 if !exists("g:buffersaurus_sort_regime")
     let g:buffersaurus_sort_regime = 'fl'
@@ -46,6 +46,9 @@ if !exists("g:buffersaurus_context_size")
 endif
 if !exists("g:buffersaurus_viewport_split_policy")
     let g:buffersaurus_viewport_split_policy = "B"
+endif
+if !exists("g:buffersaurus_move_wrap")
+    let g:buffersaurus_move_wrap  = 1
 endif
 " 1}}}
 
@@ -1188,6 +1191,9 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         noremap <buffer> <silent> g<C-G>  :call b:buffersaurus_catalog_viewer.catalog.describe_detail()<CR>
         noremap <buffer> <silent> q       :call b:buffersaurus_catalog_viewer.close()<CR>
 
+        """" Selection
+        noremap <buffer> <silent> <CR>  :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "")<CR>
+
         """" Movement within buffer
 
         " jump to next/prev key entry
@@ -1209,7 +1215,6 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         """" Movement that moves to the current search target
 
         " go to target line in other window, keeping catalog open
-        noremap <buffer> <silent> <CR>  :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "")<CR>
         noremap <buffer> <silent> o     :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "")<CR>
         noremap <buffer> <silent> ws    :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "sb")<CR>
         noremap <buffer> <silent> wv    :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "vert sb")<CR>

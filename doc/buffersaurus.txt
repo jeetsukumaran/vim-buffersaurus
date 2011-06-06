@@ -126,12 +126,18 @@ p                   Show the current entry in the previous window.
                     window.
 
 -------------------------------------------------------------------------------
-Jumping to the Matched Line Without Closing the Catalog~
+Jumping to the Matched Line~
 
 <CR>                Switch focus to the previous window and go to the current
-                    entry.
+                    entry. If 'g:buffersaurus_autodismiss_on_select' is 1,
+                    then the catalog is closed; otherwise it is kept open.
+
+-------------------------------------------------------------------------------
+Jumping to the Matched Line Without Closing the Catalog~
+
 o                   Switch focus to the previous window and go to the current
-                    entry (same as <CR>).
+                    entry (as <CR> if 'g:buffersaurus_autodismiss_on_select'
+                    is 0).
 ws                  Split the previous window, switch focus, and go to the
                     current entry.
 wv                  Split the previous window vertically, switch focus, and go
@@ -140,9 +146,10 @@ t                   Open the current entry in a new tab page, keeping the
                     catalog open.
 
 -------------------------------------------------------------------------------
-Closing the Catalog and Jumping to the Matched Line~
+Jumping to the Matched Line and Closing the Catalog~
 
-O                   Close catalog and go to the current entry.
+O                   Close catalog and go to the current entry (as <CR>
+                    if 'g:buffersaurus_autodismiss_on_select' is 1).
 wS                  Split the previous window and go to the current entry.
 wV                  Split the previous window vertically and go to the current
                     entry.
