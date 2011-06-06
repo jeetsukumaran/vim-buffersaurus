@@ -30,20 +30,23 @@ let s:save_cpo = &cpo
 set cpo&vim
 " 1}}}
 
-" Plugin Options {{{1
+" Global Plugin Options {{{1
 " =============================================================================
-
-" TODO: wrap these up in checks for pre-defines
-let g:buffersaurus_move_wrap = 1
-
-" Catalog Sort Regimes {{{2
-" ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-" (see below: `s:buffersaurus_catalog_sort_regimes`
-let g:buffersaurus_sort_regime = 'f'
-" 2}}}
-
-" endif
-
+if !exists("g:buffersaurus_move_wrap")
+    let g:buffersaurus_move_wrap  = 1
+endif
+if !exists("g:buffersaurus_sort_regime")
+    let g:buffersaurus_sort_regime = 'fl'
+endif
+if !exists("g:buffersaurus_show_context")
+    let g:buffersaurus_show_context = 0
+endif
+if !exists("g:buffersaurus_context_size")
+    let g:buffersaurus_context_size = [0, 5]
+endif
+if !exists("g:buffersaurus_viewport_split_policy")
+    let g:buffersaurus_viewport_split_policy = "B"
+endif
 " 1}}}
 
 " Script Data and Variables {{{1
@@ -372,29 +375,13 @@ function! s:NewBufferManager()
         return l:buffers_info
     endfunction
 
-    " Returns split mode to use for a new Buffersaurus viewport. If given an
-    " argument, this should be a single letter indicating the split policy. If
-    " no argument is given and `g:buffersaurus_viewport_split_policy` exists, then it
-    " will be used. If `g:buffersaurus_viewport_split_policy` does not exist, then a
-    " default will be used.
-    function! l:buffer_manager.get_split_mode(...) dict
-        if a:0 == 0
-            if exists("g:buffersaurus_viewport_split_policy")
-                if has_key(s:buffersaurus_viewport_split_modes, g:buffersaurus_viewport_split_policy)
-                    return s:buffersaurus_viewport_split_modes[g:buffersaurus_viewport_split_policy]
-                else
-                    call s:_buffersaurus_messenger.send_error("Unrecognized split mode specified by 'g:buffersaurus_viewport_split_policy': " . g:buffersaurus_viewport_split_policy)
-                endif
-            endif
+    " Returns split mode to use for a new Buffersaurus viewport.
+    function! l:buffer_manager.get_split_mode() dict
+        if has_key(s:buffersaurus_viewport_split_modes, g:buffersaurus_viewport_split_policy)
+            return s:buffersaurus_viewport_split_modes[g:buffersaurus_viewport_split_policy]
         else
-            let l:policy = a:1
-            if has_key(s:buffersaurus_viewport_split_modes, l:policy[0])
-                return s:buffersaurus_viewport_split_modes[l:policy[0]]
-            else
-                throw s:_buffersaurus_messenger.format_exception("Unrecognized split mode: '" . l:policy . "')
-            endif
+            call s:_buffersaurus_messenger.send_error("Unrecognized split mode specified by 'g:buffersaurus_viewport_split_policy': " . g:buffersaurus_viewport_split_policy)
         endif
-        return s:buffersaurus_viewport_split_modes["B"]
     endfunction
 
     " Detect filetype. From the 'taglist' plugin.
@@ -618,8 +605,8 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
                 \ "catalog_id"          : s:buffersaurus_catalog_count,
                 \ "catalog_domain"      : a:catalog_domain,
                 \ "catalog_desc"        : a:catalog_desc,
-                \ "show_context"        : exists("g:buffersaurus_" . l:var_name . "_show_context") ? g:buffersaurus_{l:var_name}_show_context : 0,
-                \ "context_size"        : exists("g:buffersaurus_" . l:var_name . "_context_size") ? g:buffersaurus_{l:var_name}_context_size : [0, 5],
+                \ "show_context"        : exists("g:buffersaurus_" . l:var_name . "_show_context") ? g:buffersaurus_{l:var_name}_show_context : g:buffersaurus_show_context,
+                \ "context_size"        : exists("g:buffersaurus_" . l:var_name . "_context_size") ? g:buffersaurus_{l:var_name}_context_size : g:buffersaurus_context_size,
                 \ "search_profile"      : [],
                 \ "matched_lines"       : [],
                 \ "search_history"      : [],
@@ -629,7 +616,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
                 \ "entry_indexes"       : [],
                 \ "entry_labels"        : {},
                 \ "last_compile_time"   : 0,
-                \ "sort_regime"         : empty(a:default_sort) ? "fl" : a:default_sort,
+                \ "sort_regime"         : empty(a:default_sort) ? g:buffersaurus_sort_regime : a:default_sort,
                 \}
 
     " sets the display context
