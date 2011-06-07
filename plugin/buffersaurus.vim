@@ -1875,7 +1875,7 @@ let s:_buffersaurus_indexer = s:NewIndexer()
 " ==============================================================================
 command! -bang -nargs=*         Bsgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
 command! -bang -nargs=0         Bstoc           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
-command! -bang -nargs=1         Bsindex         :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -bang -nargs=1         Bsterm          :call <SID>IndexTerms('<args>', '<bang>', 'fl')
 command! -nargs=0               Bsopen          :call <SID>OpenLastActiveCatalog()
 command! -range -bang -nargs=0  Bsnext          :call <SID>GotoEntry("n")
 command! -range -bang -nargs=0  Bsprev          :call <SID>GotoEntry("p")
