@@ -246,8 +246,9 @@ The following keys all open the target buffer and switch focus to
 it, keeping the catalog viewer open at the same time.
 
 o                   Keeping the catalog viewer open, switch focus to the
-                    previous window and go to the currently-selected entry (as
-                    <CR> if "g:buffersaurus_autodismiss_on_select" is 0).
+                    previous window and go to the currently-selected entry
+                    (like <CR> if "g:buffersaurus_autodismiss_on_select" is
+                    0).
 ws                  Keeping the catalog viewer open, split the previous window,
                     switch focus, and go to the currently-selected entry.
 wv                  Keeping the catalog viewer open, split the previous window
@@ -263,14 +264,14 @@ The following keys all open the target buffer and and switch focus to
 it, closing the catalog viewer at the same time.
 
 O                   Close the catalog viewer and go to the currently-selected
-                    entry (as <CR> if "g:buffersaurus_autodismiss_on_select" is
-                    1).
+                    entry in the previous window (behaves like <CR> if
+                    "g:buffersaurus_autodismiss_on_select" is 1).
 wS                  Close the catalog viewer, split the previous window and go
                     to the currently-selected entry.
 wV                  Close the catalog viewer, split the previous window
                     vertically and go to the currently-selected entry.
-T                   Close the catalog viewer, open the currently-selected entry
-                    in a new tab page, closing the catalog.
+T                   Close the catalog viewer, and open the currently-selected
+                    entry in a new tab page.
 
 ===============================================================================
                                                           *buffersaurus-options*
