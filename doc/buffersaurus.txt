@@ -31,42 +31,43 @@ given regular expression pattern. If you want Buffersaurus to search ONLY the
 current buffer, then follow the command with a bang operator to restrict the
 search scope: ":Bsgrep! {pattern}".
 
-The results are stored in catalog, and new window (the "catalog viewer") will
-open up to display the results. Each matching line will be result in an index
-entry in the catalog, and be displayed in its own row, grouped by the buffer
-file in which it occurs. You can choose to list the lines ungrouped, and
-sorted by line number, by filepath + line number, or alphabetically.
+The results are stored in memory (the "catalog"), and new window (the "catalog
+viewer") will open up to display the results. Each matching line will result
+in an index entry in the catalog, and by default be displayed in its own row,
+grouped by the buffer file in which it occurs. You can choose to list the
+lines ungrouped, and sorted by line number, by filepath + line number, or
+alphabetically.
 
 All standard Vim movement keys (e.g., "h", "j", "k", "l", <C-F>, <C-B> etc.)
 work within the catalog viewer. Moving to an entry (i.e., indexed line) and
-typing <CR> will open the target buffer in a previous window and go to the
-line number of the match (i.e., the matching line). Numerous other key maps
-are available to customize how the matching line is viewed: e.g., it can be
-previewed in the previous window without leaving the catalog ("p"), or opened
-in a new vertical split ("wv"), horizontal split ("ws"), or tab page ("t").
-Special movement keys are available to quickly take you to the next or
-previous file group ("f" and "F", respectively). You can also simultaneously
-go to the next or previous indexed line and preview it (<SPACE> and <C-SPACE>,
-respectively)
+typing <CR> will open the target buffer in a previous window and go to the the
+matching line. Numerous other key maps are available to customize how the
+matching line is opened: e.g., it can be previewed in the previous window
+without leaving the catalog ("p"), or opened in a new vertical split ("wv"),
+horizontal split ("ws"), or tab page ("t").  Special movement keys are
+available to quickly take you to the next or previous file group ("f" and "F",
+respectively). You can also simultaneously go to the next or previous indexed
+line and preview it (<SPACE> and <C-SPACE>, respectively) without leaving the
+catalog viewer.
 
 When in the catalog viewer, you can cycle through the sort regimes by pressing
 "s", or refresh the catalog (re-index the lines) by pressing "u".
 
 A special feature is the "contexted" mode. You can type "c" to toggle
 contexted mode on and off. When contexted mode is off, each indexed line is
-displayed by itself on a single row. When you press "c" to switch on contexted
-mode, each indexed line is shown with a number of lines of context before and
-after. The exact number of lines is controlled by the
-"g:buffersaurus_context_size" variable.  By default, this is set to "[4, 4]",
-which means to show 4 lines before and 4 lines after the indexed line. You can
-set this to any pair of values you line in your $VIMRUNTIME. When viewing
-results in contexted mode, multiple levels of folding are available, to allow
-you to fold away context or file groups.
+displayed by itself on a single row. After you press "c" to switch on
+contexted mode, each indexed line is shown with a number of lines of context
+that occur before and after it in the source file. The exact number of lines
+is controlled by the "g:buffersaurus_context_size" variable.  By default, this
+is set to "[4, 4]", which means to show 4 lines before and 4 lines after the
+matched line. You can set this to any pair of values you prefer in your
+$VIMRUNTIME. When viewing results in contexted mode, multiple levels of
+folding are available, to allow you to fold away context or file groups.
 
 If you want to refine the results further, you can use the command ":Bsfilter
-{pattern}" from within the catalog viewer. This will filter out any indexed
-lines that do not match "{pattern}". The filter can be switched off by
-":Bsfilter!".
+{filter-pattern}" from within the catalog viewer. This will filter out any
+indexed lines that do not match "{filter-pattern}". The filter can be switched
+off by ":Bsfilter!".
 
 You can close the catalog viewer by pressing "q". The last search results are
 retained in memory, and the command ":Bsopen" will open the viewer again to
@@ -126,9 +127,9 @@ definitions will extend Buffersaurus' built-in defintions.
                                                        *buffersaurus-commands*
 COMMANDS~
 
-:Bsg[rep][!] {pattern}
+:Bsg[rep][!] {search-pattern}
                     Search buffer(s) for the regular expression |pattern|
-                    given by {pattern}. If
+                    given by {search-pattern}. If
                     "g:buffersaurus_default_single_file" is not defined or
                     true, then all buffers will be searched unless the "bang"
                     operator is given, in which case the search will be limitd
@@ -181,15 +182,16 @@ COMMANDS~
                     Show brief (without "!") or detailed (with "!")
                     description of the most recent catalog.
 
-:Bsf[ilter][!] [pattern]
+:Bsf[ilter][!] [filter-pattern]
                     [Only available when inside a Buffergator catalog viewer
                     buffer] Without "!": filter results to only show lines
-                    matching [pattern]. If [pattern] is not given, then the
-                    previous filter pattern will be used. If there is no
+                    matching the regular expression |pattern|
+                    [filter-pattern]. If [filter-pattern] is not given, then
+                    the previous filter pattern will be used. If there is no
                     previous filter pattern, then the user will be prompted
                     for a new pattern. With "!": remove filter. In all cases
-                    if [pattern] is "*" or ".*", then the saved pattern will
-                    be cleared and the filter removed.
+                    if [filter-pattern] is "*" or ".*", then the saved pattern
+                    will be cleared and the filter removed.
 
 ===============================================================================
                                                              *buffersaurus-keys*
