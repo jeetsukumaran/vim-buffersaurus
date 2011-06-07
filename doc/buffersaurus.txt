@@ -139,7 +139,7 @@ COMMANDS~
                     then the pattern will also be assigned to the search
                     register.
 
-:Bst[oc]!
+:Bstoc[!]
                     Generate a "table of contents" type catalog for buffers,
                     based on the specific filetype of each buffer. If
                     "g:buffersaurus_default_single_file" is not defined or true, then
@@ -152,7 +152,7 @@ COMMANDS~
                     |buffersaurus-filetype-patterns| for more information on
                     the patterns to be matched.
 
-:Bsi[ndex]! {term-name}
+:Bsterm[!] {term-name}
                     Generate a catalog of occurrences of the term pattern
                     named {term-name} in buffers. If
                     "g:buffersaurus_default_single_file" is not defined or true, then
