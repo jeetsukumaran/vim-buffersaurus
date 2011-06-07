@@ -6,7 +6,7 @@ CONTENTS~
 
     1. Introduction ....................... |buffersaurus-introduction|
     2. Basic Usage ........................ |buffersaurus-basic-usage|
-    2. Special Searches ................... |buffersaurus-special-searches|
+    3. Special Searches ................... |buffersaurus-special-searches|
     4. Commands ........................... |buffersaurus-commands|
     5. Key Mappings ....................... |buffersaurus-keys|
     6. Options and Settings ............... |buffersaurus-options|
