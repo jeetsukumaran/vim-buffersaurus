@@ -128,42 +128,43 @@ COMMANDS~
 
 :Bsg[rep][!] {pattern}
                     Search buffer(s) for the regular expression |pattern|
-                    given by {pattern}. If "g:buffersaurus_default_single_file" is not
-                    defined or true, then all buffers will be searched unless
-                    the "bang" operator is given, in which case the search
-                    will be limitd to the current buffer. Otherwise, if
-                    "g:buffersaurus_default_single_file" is defined and true, then
-                    only the current buffer will be searched unless the bang
-                    operator is given, in which the search will be across all
-                    buffers. If "g:buffersaurus_set_search_register" is not false (0),
-                    then the pattern will also be assigned to the search
-                    register.
+                    given by {pattern}. If
+                    "g:buffersaurus_default_single_file" is not defined or
+                    true, then all buffers will be searched unless the "bang"
+                    operator is given, in which case the search will be limitd
+                    to the current buffer. Otherwise, if
+                    "g:buffersaurus_default_single_file" is defined and true,
+                    then only the current buffer will be searched unless the
+                    bang operator is given, in which the search will be across
+                    all buffers. If "g:buffersaurus_set_search_register" is
+                    not false (0), then the pattern will also be assigned to
+                    the search register.
 
 :Bstoc[!]
                     Generate a "table of contents" type catalog for buffers,
                     based on the specific filetype of each buffer. If
-                    "g:buffersaurus_default_single_file" is not defined or true, then
-                    all buffers will be searched unless the "bang" operator is
-                    given, in which case the search will be limitd to the
-                    current buffer. Otherwise, if "g:buffersaurus_default_single_file"
-                    is defined and true, then only the current buffer will be
-                    searched unless the bang operator is given, in which the
-                    search will be across all buffers. See
-                    |buffersaurus-filetype-patterns| for more information on
-                    the patterns to be matched.
+                    "g:buffersaurus_default_single_file" is not defined or
+                    true, then all buffers will be searched unless the "bang"
+                    operator is given, in which case the search will be limitd
+                    to the current buffer. Otherwise, if
+                    "g:buffersaurus_default_single_file" is defined and true,
+                    then only the current buffer will be searched unless the
+                    bang operator is given, in which the search will be across
+                    all buffers. See |buffersaurus-filetype-patterns| for more
+                    information on the patterns to be matched.
 
 :Bsterm[!] {term-name}
                     Generate a catalog of occurrences of the term pattern
                     named {term-name} in buffers. If
-                    "g:buffersaurus_default_single_file" is not defined or true, then
-                    all buffers will be searched unless the "bang" operator is
-                    given, in which case the search will be limitd to the
-                    current buffer. Otherwise, if "g:buffersaurus_default_single_file"
-                    is defined and true, then only the current buffer will be
-                    searched unless the bang operator is given, in which the
-                    search will be across all buffers. See
-                    |buffersaurus-term-patterns| for information on defining
-                    and using terms.
+                    "g:buffersaurus_default_single_file" is not defined or
+                    true, then all buffers will be searched unless the "bang"
+                    operator is given, in which case the search will be limitd
+                    to the current buffer. Otherwise, if
+                    "g:buffersaurus_default_single_file" is defined and true,
+                    then only the current buffer will be searched unless the
+                    bang operator is given, in which the search will be across
+                    all buffers. See |buffersaurus-term-patterns| for
+                    information on defining and using terms.
 
 :Bso[pen]
                     (Re-)open the most recent catalog.
@@ -177,8 +178,8 @@ COMMANDS~
                     catalog (like |:cprev|).
 
 :Bss[tatus][!]
-                    Show brief (without "!") or detailed (with "!") description
-                    of the most recent catalog.
+                    Show brief (without "!") or detailed (with "!")
+                    description of the most recent catalog.
 
 :Bsf[ilter][!] [pattern]
                     [Only available when inside a Buffergator catalog viewer
