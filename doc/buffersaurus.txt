@@ -19,6 +19,44 @@ Results are displayed in separate buffer, and can be (optionally) viewed with
 user-specifiable lines of context (i.e., a number of lines before and/or after
 the line matching the search pattern) or filtered for specific patterns.
 
+-------------------------------------------------------------------------------
+Basic Usage~
+
+The command ':Bsgrep {pattern}' is the most general way of invoking
+Buffersaurus. It will search all listed buffers for lines of text matching the
+given regular expression pattern. The results are stored in catalog, and new
+window (the 'catalog viewer') will open up to display the results. Each
+matching line (referred to as 'indexed lines') will be displayed in its own
+line by default, grouped by the buffer file in which it occurs. You can choose
+to list the lines ungrouped, and sorted by line number, by filepath + line
+number, or alphabetically.
+
+All standard Vim movement keys (e.g., 'h', 'j', 'k', 'l', <C-F>, <C-B> etc.)
+work within the catalog viewer. Moving to an entry (i.e., and indexed line)
+and typing <CR> will open the target buffer in a previous window and go to the
+line number of the match. Numerous other key maps are available to customize
+how the matched line is viewed: e.g., it can be previewed in the previous
+window without leaving the catalog ('p'), or opened in a new vertical split
+('wv'), horizontal split ('ws'), or tab page ('t'). Special movement keys are
+available to quickly take you to the next or previous file group ('f' and 'F',
+respectively). You can also simultaneously go to the next or previous indexed
+line and preview it (<SPACE> and <C-SPACE>, respectively)
+
+When in the catalog viewer, you can cycle through the sort regimes by pressing
+'s', or refresh the catalog (re-index the lines) by pressing 'u'.  A special
+feature is the "contexted" mode. You can type 'c' to toggle context mode on
+and off. When contexted mode is off, each matching or indexed line is
+displayed by itself on one row. When you press 'c' to switch on contexted
+mode, each matching line is shown with a number of lines context before and
+after. The exact number of lines is controlled by the
+'g:buffersaurus_context_size' variable. By default, this is set to '[4, 4]',
+which means to show 4 lines before and 4 lines after the matching line. You
+can set this to any pair of values you line in your $VIMRUNTIME.
+
+If you want to refine the results further, you can use the command ':Bsfilter
+{pattern}' from within the catalog viewer.
+
+
 ===============================================================================
                                                           *buffersaurus-commands*
 COMMANDS~
@@ -173,6 +211,7 @@ OPTIONS AND SETTINGS~
 The following options can be used to customize the behavior of this plugin.
 
 g:buffersaurus_viewport_split_policy~
+    Default: 'B'
     Determines how a new Buffersaurus window will be opened. Can be one of the
     following values:
         'd'   : user-specified Vim default
@@ -189,19 +228,35 @@ g:buffersaurus_viewport_split_policy~
         'b'   : horizontal bottom (within current window)
 
 g:buffersaurus_sort_regime~
+    Default: 'fl'
     Sets the default sort regime for results:
         'fl'  : sort by filepath, then line number [default]
         'fa'  : sort by filepath, then alphabetically by line text
         'a'   : sort alphabetically by line text
 
 g:buffersaurus_move_wrap~
+    Default: 1
     If true [default], then result navigation wraps (i.e., moving to a 'next'
     result when already on the last result goes to the first result, while
     moving to a 'previous' result when already on the first result goes to the
     last result). If false, then result navigation does not wrap.
 
 g:buffersaurus_set_search_register~
+    Default: 1
     If true [default], then ":Bsgrep {pattern}" assigns {pattern} to the
     search register.
+
+g:buffersaurus_show_context~
+    Default: 0
+    If false, then show uncontexted lines by default; otherwise, show
+    contexted lines.
+
+g:buffersaurus_context_size~
+    Default: [4, 4]
+    Must be a two-element list value. Determines the number of lines to show
+    before and after matching indexed lines in results. First element gives
+    the number of lines of context to show before matching line, while second
+    elements gives the number of lines of context to show after the matching
+    line.
 
  vim:tw=78:ts=8:ft=help:norl:

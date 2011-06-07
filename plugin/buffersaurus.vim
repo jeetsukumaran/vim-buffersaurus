@@ -42,7 +42,7 @@ if !exists("g:buffersaurus_show_context")
     let g:buffersaurus_show_context = 0
 endif
 if !exists("g:buffersaurus_context_size")
-    let g:buffersaurus_context_size = [0, 5]
+    let g:buffersaurus_context_size = [4, 4]
 endif
 if !exists("g:buffersaurus_viewport_split_policy")
     let g:buffersaurus_viewport_split_policy = "B"
