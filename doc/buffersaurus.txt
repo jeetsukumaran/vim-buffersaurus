@@ -31,11 +31,11 @@ given regular expression pattern. If you want Buffersaurus to search ONLY the
 current buffer, then follow the command with a bang operator to restrict the
 search scope: ":Bsgrep! {pattern}".
 
-The results are stored in memory (the "catalog"), and new window (the "catalog
-viewer") will open up to display the results. Each matching line will result
-in an index entry in the catalog, and by default be displayed in its own row,
-grouped by the buffer file in which it occurs. You can choose to list the
-lines ungrouped, and sorted by line number, by filepath + line number, or
+The results are stored in memory (the "catalog"), and a new window (the
+"catalog viewer") will open up to display the results. Each matching line will
+result in an index entry in the catalog, and by default be displayed in its
+own row, grouped by the buffer file in which it occurs. You can choose to list
+the lines ungrouped, and sorted by line number, by filepath + line number, or
 alphabetically.
 
 All standard Vim movement keys (e.g., "h", "j", "k", "l", <C-F>, <C-B> etc.)
