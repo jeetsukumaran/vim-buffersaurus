@@ -118,9 +118,9 @@ Movement Within the Catalog Viewer~
 [f                  Go the previous file entry.
 
 -------------------------------------------------------------------------------
-Previewing Results Without Leaving the Catalog~
+Previewing Results Without Leaving the Catalog Viewer~
 
-p                   Show the current entry in the previous window.
+p                   Show the currently-selected entry in the previous window.
 <SPACE>             Go to the next entry and show it in the previous window.
 <C-SPACE>           Go to the previous entry and show it in the previous
                     window.
@@ -128,33 +128,43 @@ p                   Show the current entry in the previous window.
 -------------------------------------------------------------------------------
 Jumping to the Matched Line~
 
-<CR>                Switch focus to the previous window and go to the current
-                    entry. If 'g:buffersaurus_autodismiss_on_select' is 1,
-                    then the catalog is closed; otherwise it is kept open.
+<CR>                Switch focus to the previous window and go to the
+                    currently-selected entry. If
+                    'g:buffersaurus_autodismiss_on_select' is 1, then the
+                    catalog is closed; otherwise it is kept open.
 
 -------------------------------------------------------------------------------
 Jumping to the Matched Line Without Closing the Catalog~
 
-o                   Switch focus to the previous window and go to the current
-                    entry (as <CR> if 'g:buffersaurus_autodismiss_on_select'
-                    is 0).
-ws                  Split the previous window, switch focus, and go to the
-                    current entry.
-wv                  Split the previous window vertically, switch focus, and go
-                    to the current entry.
-t                   Open the current entry in a new tab page, keeping the
-                    catalog open.
+The following keys all open the target buffer and switch focus to
+it, keeping the catalog viewer open at the same time.
+
+o                   Keeping the catalog viewer open, switch focus to the
+                    previous window and go to the currently-selected entry (as
+                    <CR> if 'g:buffersaurus_autodismiss_on_select' is 0).
+ws                  Keeping the catalog viewer open, split the previous window,
+                    switch focus, and go to the currently-selected entry.
+wv                  Keeping the catalog viewer open, split the previous window
+                    vertically, switch focus, and go to the currently-selected
+                    entry.
+t                   Keeping the catalog viewer open, open the currently-selected
+                    entry in a new tab page, keeping the catalog open.
 
 -------------------------------------------------------------------------------
 Jumping to the Matched Line and Closing the Catalog~
 
-O                   Close catalog and go to the current entry (as <CR>
-                    if 'g:buffersaurus_autodismiss_on_select' is 1).
-wS                  Split the previous window and go to the current entry.
-wV                  Split the previous window vertically and go to the current
-                    entry.
-T                   Open the current entry in a new tab page, closing the
-                    catalog.
+The following keys all open the target buffer and and switch focus to
+it, closing the catalog viewer at the same time.
+
+O                   Close the catalog viewer and go to the currently-selected
+                    entry (as <CR> if 'g:buffersaurus_autodismiss_on_select' is
+                    1).
+wS                  Close the catalog viewer, split the previous window and go
+                    to the currently-selected entry.
+wV                  Close the catalog viewer, split the previous window
+                    vertically and go to the currently-selected entry.
+T                   Close the catalog viewer, open the currently-selected entry
+                    in a new tab page, closing the catalog.
 
 ===============================================================================
                                                           *buffersaurus-options*
