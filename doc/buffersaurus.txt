@@ -226,10 +226,18 @@ Movement Within the Catalog Viewer~
 -------------------------------------------------------------------------------
 Previewing Results Without Leaving the Catalog Viewer~
 
-p                   Show the currently-selected entry in the previous window.
-<SPACE>             Go to the next entry and show it in the previous window.
+po, .               Show the currently-selected entry in the previous window,
+                    keeping focus on the catalog.
+ps                  Show the currently-selected entry in a new split, keeping
+                    focus on the catalog.
+pv                  Show the currently-selected entry in a new vertical split,
+                    keeping focus on the catalog.
+pt                  Show the currently-selected entry in a new tab page,
+                    keeping focus on the catalog.
+<SPACE>             Go to the next entry and show it in the previous window,
+                    keeping focus on the catalog.
 <C-SPACE>           Go to the previous entry and show it in the previous
-                    window.
+                    window, keeping focus on the catalog.
 
 -------------------------------------------------------------------------------
 Jumping to the Matched Line~

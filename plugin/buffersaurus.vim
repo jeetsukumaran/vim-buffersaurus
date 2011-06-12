@@ -1207,10 +1207,16 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         """" Movement within buffer that updates the other window
 
         " show target line in other window, keeping catalog open and in focus
-        noremap <buffer> <silent> p           :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
+        noremap <buffer> <silent> .           :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
+        noremap <buffer> <silent> po          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
+        noremap <buffer> <silent> ps          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "sb")<CR>
+        noremap <buffer> <silent> pv          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "vert sb")<CR>
+        noremap <buffer> <silent> pt          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "tab sb")<CR>
         noremap <buffer> <silent> <SPACE>     :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
         noremap <buffer> <silent> <C-SPACE>   :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
         noremap <buffer> <silent> <C-@>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+        noremap <buffer> <silent> <C-N>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
+        noremap <buffer> <silent> <C-P>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
 
         """" Movement that moves to the current search target
 
@@ -1586,15 +1592,16 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             return 0
         endif
         let [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy] = self.jump_map[l:cur_line].target
-        let l:cur_win_num = winnr()
+        let l:cur_tab_num = tabpagenr()
         if !a:keep_catalog
             call self.close()
         endif
         call self.visit_buffer(l:jump_to_buf_num, a:split_cmd)
         call setpos('.', [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy])
         execute(s:buffersaurus_post_move_cmd)
-        if a:keep_catalog && a:refocus_catalog && winnr() != l:cur_win_num
-            execute(l:cur_win_num."wincmd w")
+        if a:keep_catalog && a:refocus_catalog
+            execute("tabnext " . l:cur_tab_num)
+            execute(bufwinnr(self.buf_num) . "wincmd w")
         endif
         let l:report = ""
         if self.jump_map[l:cur_line].entry_index >= 0
