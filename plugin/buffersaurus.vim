@@ -1181,57 +1181,101 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     " Sets buffer key maps.
     function! l:catalog_viewer.setup_buffer_keymaps() dict
 
-        """" Index buffer management
-        noremap <buffer> <silent> c       :call b:buffersaurus_catalog_viewer.toggle_context()<CR>
-        noremap <buffer> <silent> s       :call b:buffersaurus_catalog_viewer.cycle_sort_regime()<CR>
-        noremap <buffer> <silent> f       :call b:buffersaurus_catalog_viewer.toggle_filter()<CR>
-        noremap <buffer> <silent> F       :call b:buffersaurus_catalog_viewer.prompt_and_apply_filter()<CR>
-        noremap <buffer> <silent> u       :call b:buffersaurus_catalog_viewer.rebuild_catalog()<CR>
-        noremap <buffer> <silent> <C-G>   :call b:buffersaurus_catalog_viewer.catalog.describe()<CR>
-        noremap <buffer> <silent> g<C-G>  :call b:buffersaurus_catalog_viewer.catalog.describe_detail()<CR>
-        noremap <buffer> <silent> q       :call b:buffersaurus_catalog_viewer.close()<CR>
+        if !exists("g:buffersaurus_use_new_keymap") || !g:buffergator_use_new_keymap
 
-        """" Selection
-        noremap <buffer> <silent> <CR>  :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "")<CR>
+            """" Index buffer management
+            noremap <buffer> <silent> cc      :call b:buffersaurus_catalog_viewer.toggle_context()<CR>
+            noremap <buffer> <silent> C       :call b:buffersaurus_catalog_viewer.toggle_context()<CR>
+            noremap <buffer> <silent> cs      :call b:buffersaurus_catalog_viewer.cycle_sort_regime()<CR>
+            noremap <buffer> <silent> f       :call b:buffersaurus_catalog_viewer.toggle_filter()<CR>
+            noremap <buffer> <silent> F       :call b:buffersaurus_catalog_viewer.prompt_and_apply_filter()<CR>
+            noremap <buffer> <silent> r       :call b:buffersaurus_catalog_viewer.rebuild_catalog()<CR>
+            noremap <buffer> <silent> <C-G>   :call b:buffersaurus_catalog_viewer.catalog.describe()<CR>
+            noremap <buffer> <silent> g<C-G>  :call b:buffersaurus_catalog_viewer.catalog.describe_detail()<CR>
+            noremap <buffer> <silent> q       :call b:buffersaurus_catalog_viewer.close()<CR>
 
-        """" Movement within buffer
+            """" Movement within buffer
 
-        " jump to next/prev key entry
-        noremap <buffer> <silent> <C-N>  :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 0, 1)<CR>
-        noremap <buffer> <silent> <C-P>  :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
+            " jump to next/prev key entry
+            noremap <buffer> <silent> <C-N>  :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 0, 1)<CR>
+            noremap <buffer> <silent> <C-P>  :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
 
-        " jump to next/prev file entry
-        noremap <buffer> <silent> ]f     :<C-U>call b:buffersaurus_catalog_viewer.goto_file_start("n", 0, 1)<CR>
-        noremap <buffer> <silent> [f     :<C-U>call b:buffersaurus_catalog_viewer.goto_file_start("p", 0, 1)<CR>
+            " jump to next/prev file entry
+            noremap <buffer> <silent> ]f     :<C-U>call b:buffersaurus_catalog_viewer.goto_file_start("n", 0, 1)<CR>
+            noremap <buffer> <silent> [f     :<C-U>call b:buffersaurus_catalog_viewer.goto_file_start("p", 0, 1)<CR>
 
-        """" Movement within buffer that updates the other window
+            """"" Selection: show target and switch focus
+            noremap <buffer> <silent> <CR>  :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "")<CR>
+            noremap <buffer> <silent> o     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "")<CR>
+            noremap <buffer> <silent> s     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "vert sb")<CR>
+            noremap <buffer> <silent> i     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "sb")<CR>
+            noremap <buffer> <silent> t     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "tab sb")<CR>
 
-        " show target line in other window, keeping catalog open and in focus
-        noremap <buffer> <silent> .           :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
-        noremap <buffer> <silent> po          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
-        noremap <buffer> <silent> ps          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "sb")<CR>
-        noremap <buffer> <silent> pv          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "vert sb")<CR>
-        noremap <buffer> <silent> pt          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "tab sb")<CR>
-        noremap <buffer> <silent> <SPACE>     :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
-        noremap <buffer> <silent> <C-SPACE>   :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
-        noremap <buffer> <silent> <C-@>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
-        noremap <buffer> <silent> <C-N>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
-        noremap <buffer> <silent> <C-P>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+            """"" Preview: show target , keeping focus on catalog
+            noremap <buffer> <silent> O          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
+            noremap <buffer> <silent> S          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "vert sb")<CR>
+            noremap <buffer> <silent> I          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "sb")<CR>
+            noremap <buffer> <silent> T          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "tab sb")<CR>
+            noremap <buffer> <silent> <SPACE>     :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
+            noremap <buffer> <silent> <C-SPACE>   :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+            noremap <buffer> <silent> <C-@>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+            noremap <buffer> <silent> <C-N>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
+            noremap <buffer> <silent> <C-P>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
 
-        """" Movement that moves to the current search target
+        else
 
-        " go to target line in other window, keeping catalog open
-        noremap <buffer> <silent> o     :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "")<CR>
-        noremap <buffer> <silent> ws    :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "sb")<CR>
-        noremap <buffer> <silent> wv    :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "vert sb")<CR>
-        noremap <buffer> <silent> t     :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "tab sb")<CR>
+            """" Index buffer management
+            noremap <buffer> <silent> c       :call b:buffersaurus_catalog_viewer.toggle_context()<CR>
+            noremap <buffer> <silent> s       :call b:buffersaurus_catalog_viewer.cycle_sort_regime()<CR>
+            noremap <buffer> <silent> f       :call b:buffersaurus_catalog_viewer.toggle_filter()<CR>
+            noremap <buffer> <silent> F       :call b:buffersaurus_catalog_viewer.prompt_and_apply_filter()<CR>
+            noremap <buffer> <silent> u       :call b:buffersaurus_catalog_viewer.rebuild_catalog()<CR>
+            noremap <buffer> <silent> <C-G>   :call b:buffersaurus_catalog_viewer.catalog.describe()<CR>
+            noremap <buffer> <silent> g<C-G>  :call b:buffersaurus_catalog_viewer.catalog.describe_detail()<CR>
+            noremap <buffer> <silent> q       :call b:buffersaurus_catalog_viewer.close()<CR>
 
-        " open target line in other window, closing catalog
-        noremap <buffer> <silent> O     :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "")<CR>
-        noremap <buffer> <silent> wS    :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "sb")<CR>
-        noremap <buffer> <silent> wV    :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "vert sb")<CR>
-        noremap <buffer> <silent> T     :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "tab sb")<CR>
+            """" Selection
+            noremap <buffer> <silent> <CR>  :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "")<CR>
 
+            """" Movement within buffer
+
+            " jump to next/prev key entry
+            noremap <buffer> <silent> <C-N>  :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 0, 1)<CR>
+            noremap <buffer> <silent> <C-P>  :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
+
+            " jump to next/prev file entry
+            noremap <buffer> <silent> ]f     :<C-U>call b:buffersaurus_catalog_viewer.goto_file_start("n", 0, 1)<CR>
+            noremap <buffer> <silent> [f     :<C-U>call b:buffersaurus_catalog_viewer.goto_file_start("p", 0, 1)<CR>
+
+            """" Movement within buffer that updates the other window
+
+            " show target line in other window, keeping catalog open and in focus
+            noremap <buffer> <silent> .           :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
+            noremap <buffer> <silent> po          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
+            noremap <buffer> <silent> ps          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "sb")<CR>
+            noremap <buffer> <silent> pv          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "vert sb")<CR>
+            noremap <buffer> <silent> pt          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "tab sb")<CR>
+            noremap <buffer> <silent> <SPACE>     :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
+            noremap <buffer> <silent> <C-SPACE>   :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+            noremap <buffer> <silent> <C-@>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+            noremap <buffer> <silent> <C-N>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
+            noremap <buffer> <silent> <C-P>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
+
+            """" Movement that moves to the current search target
+
+            " go to target line in other window, keeping catalog open
+            noremap <buffer> <silent> o     :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "")<CR>
+            noremap <buffer> <silent> ws    :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "sb")<CR>
+            noremap <buffer> <silent> wv    :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "vert sb")<CR>
+            noremap <buffer> <silent> t     :call b:buffersaurus_catalog_viewer.visit_target(1, 0, "tab sb")<CR>
+
+            " open target line in other window, closing catalog
+            noremap <buffer> <silent> O     :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "")<CR>
+            noremap <buffer> <silent> wS    :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "sb")<CR>
+            noremap <buffer> <silent> wV    :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "vert sb")<CR>
+            noremap <buffer> <silent> T     :call b:buffersaurus_catalog_viewer.visit_target(0, 0, "tab sb")<CR>
+
+        endif
 
     endfunction
 

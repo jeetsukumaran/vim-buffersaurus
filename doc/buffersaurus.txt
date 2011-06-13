@@ -40,22 +40,23 @@ alphabetically.
 
 All standard Vim movement keys (e.g., "h", "j", "k", "l", <C-F>, <C-B> etc.)
 work within the catalog viewer. Moving to an entry (i.e., indexed line) and
-typing <CR> will open the target buffer in a previous window and go to the the
-matching line. Numerous other key maps are available to customize how the
-matching line is opened: e.g., it can be previewed in the previous window
-without leaving the catalog ("p"), or opened in a new vertical split ("wv"),
-horizontal split ("ws"), or tab page ("t").  Special movement keys are
-available to quickly take you to the next or previous file group ("f" and "F",
-respectively). You can also simultaneously go to the next or previous indexed
-line and preview it (<SPACE> and <C-SPACE>, respectively) without leaving the
-catalog viewer.
+typing <CR> (or "o") will open the target buffer in a previous window and go
+to the the matching line. Numerous other key maps are available to customize
+how the matching line is opened: e.g., a new vertical split ("s"), horizontal
+split ("i"), or tab page ("t").  In addition, the target can be opened
+"silently" or previewed in the background in the previous window ("O"), new
+"vertical split ("S"), new horizontal split ("I") or new tab page ("T").
+"Special movement keys are available to quickly take you to the next or
+"previous file group ("f" and "F", respectively). You can also simultaneously
+"go to the next or previous indexed line and preview it (<SPACE> and
+"<C-SPACE>, respectively) without leaving the catalog viewer.
 
-When in the catalog viewer, you can cycle through the sort regimes by pressing
-"s", or refresh the catalog (re-index the lines) by pressing "u".
+When in the catalog viewer, you can cycle through the sort regimes by typing
+"cs", or refresh the catalog (re-index the lines) by pressing "r".
 
-A special feature is the "contexted" mode. You can type "c" to toggle
-contexted mode on and off. When contexted mode is off, each indexed line is
-displayed by itself on a single row. After you press "c" to switch on
+A special feature is the "contexted" mode. You can type "cc" (or "C") to
+toggle contexted mode on and off. When contexted mode is off, each indexed
+line is displayed by itself on a single row. After you press "cc" to switch on
 contexted mode, each indexed line is shown with a number of lines of context
 that occur before and after it in the source file. The exact number of lines
 is controlled by the "g:buffersaurus_context_size" variable.  By default, this
@@ -71,7 +72,7 @@ off by ":Bsfilter!".
 
 You can close the catalog viewer by pressing "q". The last search results are
 retained in memory, and the command ":Bsopen" will open the viewer again to
-re-display these; you may want to type "u" to re-run the search if any of your
+re-display these; you may want to type "r" to re-run the search if any of your
 buffers have changed.
 
 Once you have carried out a search and jumped to a matched line, and/or closed
@@ -210,7 +211,7 @@ f                   Filter results for lines matching pattern
                     (see |buffersaurus-filter|).
 F                   Enter and apply a new filter pattern
                     (see |buffersaurus-filter|).
-u                   Update (rebuild/refresh) index.
+r                   Rebuild/refresh the index.
 <C-G>               Brief status of index/catalog (|buffersaurus-status|).
 g<C-G>              Detailed status of index/catalog (|buffersaurus-status|).
 q                   Quit the index/catalog window.
@@ -224,46 +225,37 @@ Movement Within the Catalog Viewer~
 [f                  Go the previous file entry.
 
 -------------------------------------------------------------------------------
-Previewing Results Without Leaving the Catalog Viewer~
-
-po, .               Show the currently-selected entry in the previous window,
-                    keeping focus on the catalog.
-ps                  Show the currently-selected entry in a new split, keeping
-                    focus on the catalog.
-pv                  Show the currently-selected entry in a new vertical split,
-                    keeping focus on the catalog.
-pt                  Show the currently-selected entry in a new tab page,
-                    keeping focus on the catalog.
-<SPACE>             Go to the next entry and show it in the previous window,
-                    keeping focus on the catalog.
-<C-SPACE>           Go to the previous entry and show it in the previous
-                    window, keeping focus on the catalog.
-
--------------------------------------------------------------------------------
 Jumping to the Matched Line~
 
-<CR>                Switch focus to the previous window and go to the
-                    currently-selected entry. If
-                    "g:buffersaurus_autodismiss_on_select" is 1, then the
-                    catalog is closed; otherwise it is kept open.
+The following keys all open the target buffer and focus to it. The catalog
+buffer will be closed if 'g:buffersaurus_autodismiss_on_select' evaluates to
+true; otherwise it will be kept open.
+
+
+o, <CR>             Switch focus to the previous window and go to the
+                    currently-selected entry.
+s                   Split the previous window vertically, switch focus, and
+                    go to the currently-selected entry.
+i                   Split the previous window horizotnally, switch focus, and
+                    go to the currently-selected entry.
+t                   Open the currently-selected entry in a new tab page.
 
 -------------------------------------------------------------------------------
-Jumping to the Matched Line Without Closing the Catalog~
+Previewing Results Without Leaving the Catalog Viewer~
 
-The following keys all open the target buffer and switch focus to
-it, keeping the catalog viewer open at the same time.
+The following keys all open the target, but retain focus on the catalog
+viewer.
 
-o                   Keeping the catalog viewer open, switch focus to the
-                    previous window and go to the currently-selected entry
-                    (like <CR> if "g:buffersaurus_autodismiss_on_select" is
-                    0).
-ws                  Keeping the catalog viewer open, split the previous window,
-                    switch focus, and go to the currently-selected entry.
-wv                  Keeping the catalog viewer open, split the previous window
-                    vertically, switch focus, and go to the currently-selected
-                    entry.
-t                   Keeping the catalog viewer open, open the currently-selected
-                    entry in a new tab page, keeping the catalog open.
+O                   Preview the currently-selected entry in the previous
+                    window.
+S                   Preview the currently-selected entry in a new vertical
+                    split.
+I                   Preview the currently-selected entry in a new horizontal
+                    split.
+T                   Preview the currently-selected entry in a new tab page.
+<SPACE>             Go to the next entry and show it in the previous window.
+<C-SPACE>           Go to the previous entry and show it in the previous
+                    window.
 
 -------------------------------------------------------------------------------
 Jumping to the Matched Line and Closing the Catalog~
