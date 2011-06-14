@@ -246,32 +246,16 @@ Previewing Results Without Leaving the Catalog Viewer~
 The following keys all open the target, but retain focus on the catalog
 viewer.
 
-O                   Preview the currently-selected entry in the previous
+O, go               Preview the currently-selected entry in the previous
                     window.
-S                   Preview the currently-selected entry in a new vertical
+S, gs               Preview the currently-selected entry in a new vertical
                     split.
-I                   Preview the currently-selected entry in a new horizontal
+I, gi               Preview the currently-selected entry in a new horizontal
                     split.
 T                   Preview the currently-selected entry in a new tab page.
 <SPACE>             Go to the next entry and show it in the previous window.
 <C-SPACE>           Go to the previous entry and show it in the previous
                     window.
-
--------------------------------------------------------------------------------
-Jumping to the Matched Line and Closing the Catalog~
-
-The following keys all open the target buffer and and switch focus to
-it, closing the catalog viewer at the same time.
-
-O                   Close the catalog viewer and go to the currently-selected
-                    entry in the previous window (behaves like <CR> if
-                    "g:buffersaurus_autodismiss_on_select" is 1).
-wS                  Close the catalog viewer, split the previous window and go
-                    to the currently-selected entry.
-wV                  Close the catalog viewer, split the previous window
-                    vertically and go to the currently-selected entry.
-T                   Close the catalog viewer, and open the currently-selected
-                    entry in a new tab page.
 
 ===============================================================================
                                                           *buffersaurus-options*

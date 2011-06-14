@@ -1213,8 +1213,11 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
             """"" Preview: show target , keeping focus on catalog
             noremap <buffer> <silent> O          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
+            noremap <buffer> <silent> go         :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
             noremap <buffer> <silent> S          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "vert sb")<CR>
+            noremap <buffer> <silent> gs         :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "vert sb")<CR>
             noremap <buffer> <silent> I          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "sb")<CR>
+            noremap <buffer> <silent> gi         :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "sb")<CR>
             noremap <buffer> <silent> T          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "tab sb")<CR>
             noremap <buffer> <silent> <SPACE>     :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
             noremap <buffer> <silent> <C-SPACE>   :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
