@@ -44,12 +44,12 @@ typing <CR> (or "o") will open the target buffer in a previous window and go
 to the the matching line. Numerous other key maps are available to customize
 how the matching line is opened: e.g., a new vertical split ("s"), horizontal
 split ("i"), or tab page ("t").  In addition, the target can be opened
-"silently" or previewed in the background in the previous window ("O"), new
-"vertical split ("S"), new horizontal split ("I") or new tab page ("T").
-"Special movement keys are available to quickly take you to the next or
-"previous file group ("f" and "F", respectively). You can also simultaneously
-"go to the next or previous indexed line and preview it (<SPACE> and
-"<C-SPACE>, respectively) without leaving the catalog viewer.
+"silently" or previewed in the background in the previous window ("go" or
+"O"), new "vertical split ("gs" or "S"), new horizontal split ("gi" or "I") or
+new tab page ("T").  Special movement keys are available to quickly take you
+to the next or previous file group ("f" and "F", respectively). You can also
+simultaneously go to the next or previous indexed line and preview it (<SPACE>
+and "<C-SPACE>, respectively) without leaving the catalog viewer.
 
 When in the catalog viewer, you can cycle through the sort regimes by typing
 "cs", or refresh the catalog (re-index the lines) by pressing "r".
@@ -205,15 +205,13 @@ in the catalog viewer.
 -------------------------------------------------------------------------------
 Catalog Management~
 
-c                   Toggle contexted view on/off (|buffersaurus-context|)
-s                   Cycle through sort regimes (|buffersaurus-sort|).
-f                   Filter results for lines matching pattern
-                    (see |buffersaurus-filter|).
+cc, C               Toggle contexted view on/off.
+cs                  Cycle through sort regimes.
+f                   Filter results for lines matching pattern.
 F                   Enter and apply a new filter pattern
-                    (see |buffersaurus-filter|).
 r                   Rebuild/refresh the index.
-<C-G>               Brief status of index/catalog (|buffersaurus-status|).
-g<C-G>              Detailed status of index/catalog (|buffersaurus-status|).
+<C-G>               Brief status of index/catalog.
+g<C-G>              Detailed status of index/catalog.
 q                   Quit the index/catalog window.
 
 -------------------------------------------------------------------------------
