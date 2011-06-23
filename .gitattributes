@@ -1,0 +1,4 @@
+.gitattibutes export-ignore
+.gitignore export-ignore
+README.txt export-ignore
+
