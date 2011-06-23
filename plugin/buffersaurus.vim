@@ -589,7 +589,7 @@ endfunction
 
 " 1}}}
 
-"  Catalog {{{1
+" Catalog {{{1
 " ==============================================================================
 
 " The main workhorse pseudo-object is created here ...
@@ -1180,6 +1180,14 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Sets buffer key maps.
     function! l:catalog_viewer.setup_buffer_keymaps() dict
+
+        """" Disabling of unused modification keys
+        for key in [".", "p", "P", "C", "x", "X", "r", "R", "i", "I", "a", "A", "D", "S", "U"]
+            try
+                execute "nnoremap <buffer> " . key . " <NOP>"
+            catch //
+            endtry
+        endfor
 
         if !exists("g:buffersaurus_use_new_keymap") || !g:buffergator_use_new_keymap
 
