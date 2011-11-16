@@ -448,7 +448,7 @@ function! s:NewIndexer()
         \ "PyDef"       : '^\s*def\s\+[A-Za-z_]\i\+(.*',
         \ }
     if exists("g:buffersaurus_element_term_map")
-        call extend(buffersaurus_element_term_map, g:buffersaurus_element_term_map)
+        call extend(l:indexer["element_term_map"], g:buffersaurus_element_term_map)
     endif
 
     " Indexes all files given by the list `filepaths` for the regular
