@@ -51,7 +51,7 @@ if !exists("g:buffersaurus_move_wrap")
     let g:buffersaurus_move_wrap  = 1
 endif
 if !exists("g:buffersaurus_flash_jumped_line")
-    let g:buffersaurus_flash_jumped_line  = 0
+    let g:buffersaurus_flash_jumped_line  = 1
 endif
 " 1}}}
 
@@ -1683,9 +1683,18 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         call setpos('.', [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy])
         execute(s:buffersaurus_post_move_cmd)
         if g:buffersaurus_flash_jumped_line
-            exec 'silent! match Search /\%'. line('.') .'l.*/'
+            exec 'silent! match BuffersaurusFlashMatchedLineHighlight1 /\%'. line('.') .'l.*/'
             redraw
-            sleep 100m
+            sleep 75m
+            exec 'silent! match BuffersaurusFlashMatchedLineHighlight2 /\%'. line('.') .'l.*/'
+            redraw
+            sleep 75m
+            exec 'silent! match BuffersaurusFlashMatchedLineHighlight1 /\%'. line('.') .'l.*/'
+            redraw
+            sleep 75m
+            exec 'silent! match BuffersaurusFlashMatchedLineHighlight2 /\%'. line('.') .'l.*/'
+            redraw
+            sleep 75m
             match none
         endif
         if a:keep_catalog && a:refocus_catalog
@@ -1965,6 +1974,8 @@ if exists("s:_buffersaurus_indexer")
     unlet s:_buffersaurus_indexer
 endif
 let s:_buffersaurus_indexer = s:NewIndexer()
+hi! BuffersaurusFlashMatchedLineHighlight1 guifg=#000000 guibg=#ff00ff ctermfg=0 ctermbg=164 term=reverse
+hi! BuffersaurusFlashMatchedLineHighlight2 guifg=#ff00ff guibg=#000000 ctermfg=164 ctermbg=0 term=reverse
 " 1}}}
 
 " Public Command and Key Maps {{{1
