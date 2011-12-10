@@ -50,6 +50,9 @@ endif
 if !exists("g:buffersaurus_move_wrap")
     let g:buffersaurus_move_wrap  = 1
 endif
+if !exists("g:buffersaurus_flash_jumped_line")
+    let g:buffersaurus_flash_jumped_line  = 0
+endif
 " 1}}}
 
 " Script Data and Variables {{{1
@@ -62,7 +65,7 @@ let s:buffersaurus_lnum_field_width = 6
 let s:buffersaurus_entry_label_field_width = 4
 " TODO: populate the following based on user setting, as well as allow
 " abstraction from the actual Vim command (e.g., option "top" => "zt")
-let s:buffersaurus_post_move_cmd = "normal! zt"
+let s:buffersaurus_post_move_cmd = "normal! zz"
 
 " 2}}}
 
@@ -1204,6 +1207,9 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
             """" Movement within buffer
 
+            " flash matched line
+            noremap <buffer> <silent> P      :let g:buffersaurus_flash_jumped_line = !g:buffersaurus_flash_jumped_line<CR>
+
             " jump to next/prev key entry
             noremap <buffer> <silent> <C-N>  :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 0, 1)<CR>
             noremap <buffer> <silent> <C-P>  :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 0, 1)<CR>
@@ -1218,6 +1224,12 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             noremap <buffer> <silent> s     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "vert sb")<CR>
             noremap <buffer> <silent> i     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "sb")<CR>
             noremap <buffer> <silent> t     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "tab sb")<CR>
+
+            """"" Selection: show target and switch focus, preserving the catalog regardless of the autodismiss setting
+            noremap <buffer> <silent> po          :<C-U>call b:buffersaurus_catalog_viewer.visit_target(1, 0, "")<CR>
+            noremap <buffer> <silent> ps          :<C-U>call b:buffersaurus_catalog_viewer.visit_target(1, 0, "vert sb")<CR>
+            noremap <buffer> <silent> pi          :<C-U>call b:buffersaurus_catalog_viewer.visit_target(1, 0, "sb")<CR>
+            noremap <buffer> <silent> pt          :<C-U>call b:buffersaurus_catalog_viewer.visit_target(1, 0, "tab sb")<CR>
 
             """"" Preview: show target , keeping focus on catalog
             noremap <buffer> <silent> O          :call b:buffersaurus_catalog_viewer.visit_target(1, 1, "")<CR>
@@ -1670,6 +1682,12 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         call self.visit_buffer(l:jump_to_buf_num, a:split_cmd)
         call setpos('.', [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy])
         execute(s:buffersaurus_post_move_cmd)
+        if g:buffersaurus_flash_jumped_line
+            exec 'silent! match Search /\%'. line('.') .'l.*/'
+            redraw
+            sleep 100m
+            match none
+        endif
         if a:keep_catalog && a:refocus_catalog
             execute("tabnext " . l:cur_tab_num)
             execute(bufwinnr(self.buf_num) . "wincmd w")
