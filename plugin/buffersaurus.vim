@@ -460,8 +460,9 @@ function! s:NewIndexer()
     " `filepaths` is empty, then all
     " listed buffers are indexed.
     function! l:indexer.index_terms(filepaths, term_id, sort_regime) dict
+        let l:old_hidden = &hidden
+        set hidden
         let l:worklist = self.ensure_buffers(a:filepaths)
-
         let l:desc = "Catalog of"
         if !empty(a:term_id)
             let l:desc .= "'" . a:term_id . "'"
@@ -479,11 +480,14 @@ function! s:NewIndexer()
             let l:pattern = self.get_buffer_term_pattern(buf_ref, a:term_id)
             call l:catalog.map_buffer(buf_ref, l:pattern)
         endfor
+        let &hidden=l:old_hidden
         return l:catalog
     endfunction
 
     " Indexes all files given by the list `filepaths` for tags.
     function! l:indexer.index_tags(filepaths) dict
+        let l:old_hidden = &hidden
+        set hidden
         let l:worklist = self.ensure_buffers(a:filepaths)
         let l:desc = "Catalog of tags"
         if empty(a:filepaths)
@@ -497,6 +501,7 @@ function! s:NewIndexer()
         for buf_ref in l:worklist
             call l:catalog.map_buffer(buf_ref)
         endfor
+        let &hidden=l:old_hidden
         return l:catalog
     endfunction
 
@@ -504,6 +509,8 @@ function! s:NewIndexer()
     " expression given by `pattern`. If `filepaths` is empty, then all
     " listed buffers are indexed.
     function! l:indexer.index_pattern(filepaths, pattern, sort_regime) dict
+        let l:old_hidden = &hidden
+        set hidden
         let l:worklist = self.ensure_buffers(a:filepaths)
 
         let l:desc = "Catalog of pattern '" . a:pattern . "'"
@@ -518,6 +525,7 @@ function! s:NewIndexer()
         for buf_ref in l:worklist
             call l:catalog.map_buffer(buf_ref, a:pattern)
         endfor
+        let &hidden=l:old_hidden
         return l:catalog
     endfunction
 
