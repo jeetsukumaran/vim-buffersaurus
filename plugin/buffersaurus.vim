@@ -425,33 +425,44 @@ function! s:NewIndexer()
 
     " set up filetype vocabulary
     let l:indexer["filetype_term_map"] = {
-        \ "bib"         : '^@\w\+\s*{\s*\zs\S\{-}\ze\s*,',
-        \ "c"           : '^[[:alnum:]#].*',
-        \ "cpp"         : '^[[:alnum:]#].*',
-        \ "html"        : '\(<h\d.\{-}</h\d>\|<\(html\|head\|body\|div\|script\|a\s\+name=\).\{-}>\|<.\{-}\<id=.\{-}>\)',
-        \ "java"        : '^\s*\(\(package\|import\|private\|public\|protected\|void\|int\|boolean\)\s\+\|\u\).*',
-        \ "javascript"  : '^\(var\s\+.\{-}\|\s*\w\+\s*:\s*\S.\{-}[,{]\)\s*$',
-        \ "perl"        : '^\([$%@]\|\s*\(use\|sub\)\>\).*',
-        \ "php"         : '^\(\w\|\s*\(class\|function\|var\|require\w*\|include\w*\)\>\).*',
-        \ "python"      : '^\s*\(import\|class\|def\)\s\+[A-Za-z_]\i\+(.*',
-        \ "ruby"        : '\C^\(if\>\|\s*\(class\|module\|def\|require\|private\|public\|protected\|module_functon\|alias\|attr\(_reader\|_writer\|_accessor\)\?\)\>\|\s*[[:upper:]_]\+\s*=\).*',
-        \ "scheme"      : '^\s*(define.*',
-        \ "sh"          : '^\s*\(\(export\|function\|while\|case\|if\)\>\|\w\+\s*()\s*{\).*',
-        \ "tcl"         : '^\s*\(source\|proc\)\>.*',
-        \ "tex"         : '\C\\\(label\|\(sub\)*\(section\|paragraph\|part\)\)\>.*',
-        \ "vim"         : '\C^\(fu\%[nction]\|com\%[mand]\|if\|wh\%[ile]\)\>.*',
+        \   'bib'         : '^@\w\+\s*{\s*\zs\S\{-}\ze\s*,'
+        \ , 'c'           : '^[[:alnum:]#].*'
+        \ , 'cpp'         : '^[[:alnum:]#].*'
+        \ , 'html'        : '\(<h\d.\{-}</h\d>\|<\(html\|head\|body\|div\|script\|a\s\+name=\).\{-}>\|<.\{-}\<id=.\{-}>\)'
+        \ , 'java'        : '^\s*\(\(package\|import\|private\|public\|protected\|void\|int\|boolean\)\s\+\|\u\).*'
+        \ , 'javascript'  : '^\(var\s\+.\{-}\|\s*\w\+\s*:\s*\S.\{-}[,{]\)\s*$'
+        \ , 'perl'        : '^\([$%@]\|\s*\(use\|sub\)\>\).*'
+        \ , 'php'         : '^\(\w\|\s*\(class\|function\|var\|require\w*\|include\w*\)\>\).*'
+        \ , 'python'      : '^\s*\(import\|class\|def\)\s\+[A-Za-z_]\i\+(.*'
+        \ , 'ruby'        : '\C^\(if\>\|\s*\(class\|module\|def\|require\|private\|public\|protected\|module_functon\|alias\|attr\(_reader\|_writer\|_accessor\)\?\)\>\|\s*[[:upper:]_]\+\s*=\).*'
+        \ , 'scheme'      : '^\s*(define.*'
+        \ , 'sh'          : '^\s*\(\(export\|function\|while\|case\|if\)\>\|\w\+\s*()\s*{\).*'
+        \ , 'tcl'         : '^\s*\(source\|proc\)\>.*'
+        \ , 'tex'         : '\C\\\(label\|\(sub\)*\(section\|paragraph\|part\)\)\>.*'
+        \ , 'vim'         : '\C^\(fu\%[nction]\|com\%[mand]\|if\|wh\%[ile]\)\>.*'
         \ }
     if exists("g:buffersaurus_filetype_term_map")
-        call extend(l:indexer["filetype_term_map"], g:buffersaurus_filetype_term_map)
+        " User-defined patterns have higher priority
+        call extend(l:indexer["filetype_term_map"], g:buffersaurus_filetype_term_map, 'force')
     endif
 
     " set up element vocabulary
     let l:indexer["element_term_map"] = {
-        \ "PyClass"     : '^\s*class\s\+[A-Za-z_]\i\+(.*',
-        \ "PyDef"       : '^\s*def\s\+[A-Za-z_]\i\+(.*',
+        \   'PyClass'     : '^\s*class\s\+[A-Za-z_]\i\+(.*'
+        \ , 'PyDef'       : '^\s*def\s\+[A-Za-z_]\i\+(.*'
+        \ , 'VimFunction' : '^\C[:[:space:]]*fu\%[nction]\>!\=\s*\S\+('
+        \ , 'VimMapping'  : '^\C[:[:space:]]*[nvxsoilc]\=\(\%(nore\|un\)\=map\>\|mapclear\)\>'
+        \ , 'VimCommand'  : '^\C[:[:space:]]*com\%[mand]\>'
+        \ , 'CppClass'    : '^\s*\(\(public\|private\|protected\)\s*:\)\=\s*\(class\|struct\)\s\+\w\+\>\(\s*;\)\@!'
+        \ , 'CppTypedef'  : '^\s*\(\(public\|private\|protected\)\s*:\)\=\s*typedef\>'
+        \ , 'CppEnum'     : '^\s*\(\(public\|private\|protected\)\s*:\)\=\s*enum\>'
+        \ , 'CppTemplate' : '^\s*template\($\|<\)'
+        \ , 'CppPreproc'  : '^#'
         \ }
+
     if exists("g:buffersaurus_element_term_map")
-        call extend(l:indexer["element_term_map"], g:buffersaurus_element_term_map)
+        " User-defined patterns have higher priority
+        call extend(l:indexer["element_term_map"], g:buffersaurus_element_term_map, 'force')
     endif
 
     " Indexes all files given by the list `filepaths` for the regular
@@ -1988,13 +1999,22 @@ hi! BuffersaurusFlashMatchedLineHighlight2 guifg=#ff00ff guibg=#000000 ctermfg=1
 
 " Public Command and Key Maps {{{1
 " ==============================================================================
-command! -bang -nargs=*         Bsgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
-command! -bang -nargs=0         Bstoc           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
-command! -bang -nargs=1         Bsterm          :call <SID>IndexTerms('<args>', '<bang>', 'fl')
-command! -nargs=0               Bsopen          :call <SID>OpenLastActiveCatalog()
-command! -range -bang -nargs=0  Bsnext          :call <SID>GotoEntry("n")
-command! -range -bang -nargs=0  Bsprev          :call <SID>GotoEntry("p")
-command! -bang -nargs=0         Bsstatus        :call <SID>ShowCatalogStatus('<bang>')
+function! <SID>Complete_bsterm(A,L,P)
+    let l:possible_matchs = sort(keys(s:_buffersaurus_indexer["element_term_map"]))
+    if len(a:A) == 0
+        return l:possible_matchs
+    endif
+    call filter(l:possible_matchs, 'v:val[:' . (len(a:A)-1) . '] ==? ''' . substitute(a:A, "'", "''", 'g') . '''')
+    return possible_matchs
+endfunction
+
+command! -bang -nargs=*                                           Bsgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
+command! -bang -nargs=0                                           Bstoc           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -bang -nargs=1 -complete=customlist,<SID>Complete_bsterm Bsterm          :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -nargs=0                                                 Bsopen          :call <SID>OpenLastActiveCatalog()
+command! -range -bang -nargs=0                                    Bsnext          :call <SID>GotoEntry("n")
+command! -range -bang -nargs=0                                    Bsprev          :call <SID>GotoEntry("p")
+command! -bang -nargs=0                                           Bsstatus        :call <SID>ShowCatalogStatus('<bang>')
 
 " (development/debugging) "
 let g:buffersaurus_plugin_path = expand('<sfile>:p')
