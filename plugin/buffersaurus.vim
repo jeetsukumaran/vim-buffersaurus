@@ -442,7 +442,8 @@ function! s:NewIndexer()
         \ "vim"         : '\C^\(fu\%[nction]\|com\%[mand]\|if\|wh\%[ile]\)\>.*',
         \ }
     if exists("g:buffersaurus_filetype_term_map")
-        call extend(l:indexer["filetype_term_map"], g:buffersaurus_filetype_term_map)
+        " User-defined patterns have higher priority
+        call extend(l:indexer["filetype_term_map"], g:buffersaurus_filetype_term_map, 'force')
     endif
 
     " set up element vocabulary
@@ -451,7 +452,8 @@ function! s:NewIndexer()
         \ "PyDef"       : '^\s*def\s\+[A-Za-z_]\i\+(.*',
         \ }
     if exists("g:buffersaurus_element_term_map")
-        call extend(l:indexer["element_term_map"], g:buffersaurus_element_term_map)
+        " User-defined patterns have higher priority
+        call extend(l:indexer["element_term_map"], g:buffersaurus_element_term_map, 'force')
     endif
 
     " Indexes all files given by the list `filepaths` for the regular
@@ -1988,13 +1990,22 @@ hi! BuffersaurusFlashMatchedLineHighlight2 guifg=#ff00ff guibg=#000000 ctermfg=1
 
 " Public Command and Key Maps {{{1
 " ==============================================================================
-command! -bang -nargs=*         Bsgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
-command! -bang -nargs=0         Bstoc           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
-command! -bang -nargs=1         Bsterm          :call <SID>IndexTerms('<args>', '<bang>', 'fl')
-command! -nargs=0               Bsopen          :call <SID>OpenLastActiveCatalog()
-command! -range -bang -nargs=0  Bsnext          :call <SID>GotoEntry("n")
-command! -range -bang -nargs=0  Bsprev          :call <SID>GotoEntry("p")
-command! -bang -nargs=0         Bsstatus        :call <SID>ShowCatalogStatus('<bang>')
+function! <SID>Complete_bsterm(A,L,P)
+    let l:possible_matchs = sort(keys(s:_buffersaurus_indexer["element_term_map"]))
+    if len(a:A) == 0
+        return l:possible_matchs
+    endif
+    call filter(l:possible_matchs, 'v:val[:' . (len(a:A)-1) . '] ==? ''' . substitute(a:A, "'", "''", 'g') . '''')
+    return possible_matchs
+endfunction
+
+command! -bang -nargs=*                                           Bsgrep          :call <SID>IndexPatterns(<q-args>, '<bang>', '')
+command! -bang -nargs=0                                           Bstoc           :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -bang -nargs=1 -complete=customlist,<SID>Complete_bsterm Bsterm          :call <SID>IndexTerms('<args>', '<bang>', 'fl')
+command! -nargs=0                                                 Bsopen          :call <SID>OpenLastActiveCatalog()
+command! -range -bang -nargs=0                                    Bsnext          :call <SID>GotoEntry("n")
+command! -range -bang -nargs=0                                    Bsprev          :call <SID>GotoEntry("p")
+command! -bang -nargs=0                                           Bsstatus        :call <SID>ShowCatalogStatus('<bang>')
 
 " (development/debugging) "
 let g:buffersaurus_plugin_path = expand('<sfile>:p')
