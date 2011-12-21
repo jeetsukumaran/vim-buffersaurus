@@ -425,21 +425,21 @@ function! s:NewIndexer()
 
     " set up filetype vocabulary
     let l:indexer["filetype_term_map"] = {
-        \ "bib"         : '^@\w\+\s*{\s*\zs\S\{-}\ze\s*,',
-        \ "c"           : '^[[:alnum:]#].*',
-        \ "cpp"         : '^[[:alnum:]#].*',
-        \ "html"        : '\(<h\d.\{-}</h\d>\|<\(html\|head\|body\|div\|script\|a\s\+name=\).\{-}>\|<.\{-}\<id=.\{-}>\)',
-        \ "java"        : '^\s*\(\(package\|import\|private\|public\|protected\|void\|int\|boolean\)\s\+\|\u\).*',
-        \ "javascript"  : '^\(var\s\+.\{-}\|\s*\w\+\s*:\s*\S.\{-}[,{]\)\s*$',
-        \ "perl"        : '^\([$%@]\|\s*\(use\|sub\)\>\).*',
-        \ "php"         : '^\(\w\|\s*\(class\|function\|var\|require\w*\|include\w*\)\>\).*',
-        \ "python"      : '^\s*\(import\|class\|def\)\s\+[A-Za-z_]\i\+(.*',
-        \ "ruby"        : '\C^\(if\>\|\s*\(class\|module\|def\|require\|private\|public\|protected\|module_functon\|alias\|attr\(_reader\|_writer\|_accessor\)\?\)\>\|\s*[[:upper:]_]\+\s*=\).*',
-        \ "scheme"      : '^\s*(define.*',
-        \ "sh"          : '^\s*\(\(export\|function\|while\|case\|if\)\>\|\w\+\s*()\s*{\).*',
-        \ "tcl"         : '^\s*\(source\|proc\)\>.*',
-        \ "tex"         : '\C\\\(label\|\(sub\)*\(section\|paragraph\|part\)\)\>.*',
-        \ "vim"         : '\C^\(fu\%[nction]\|com\%[mand]\|if\|wh\%[ile]\)\>.*',
+        \   'bib'         : '^@\w\+\s*{\s*\zs\S\{-}\ze\s*,'
+        \ , 'c'           : '^[[:alnum:]#].*'
+        \ , 'cpp'         : '^[[:alnum:]#].*'
+        \ , 'html'        : '\(<h\d.\{-}</h\d>\|<\(html\|head\|body\|div\|script\|a\s\+name=\).\{-}>\|<.\{-}\<id=.\{-}>\)'
+        \ , 'java'        : '^\s*\(\(package\|import\|private\|public\|protected\|void\|int\|boolean\)\s\+\|\u\).*'
+        \ , 'javascript'  : '^\(var\s\+.\{-}\|\s*\w\+\s*:\s*\S.\{-}[,{]\)\s*$'
+        \ , 'perl'        : '^\([$%@]\|\s*\(use\|sub\)\>\).*'
+        \ , 'php'         : '^\(\w\|\s*\(class\|function\|var\|require\w*\|include\w*\)\>\).*'
+        \ , 'python'      : '^\s*\(import\|class\|def\)\s\+[A-Za-z_]\i\+(.*'
+        \ , 'ruby'        : '\C^\(if\>\|\s*\(class\|module\|def\|require\|private\|public\|protected\|module_functon\|alias\|attr\(_reader\|_writer\|_accessor\)\?\)\>\|\s*[[:upper:]_]\+\s*=\).*'
+        \ , 'scheme'      : '^\s*(define.*'
+        \ , 'sh'          : '^\s*\(\(export\|function\|while\|case\|if\)\>\|\w\+\s*()\s*{\).*'
+        \ , 'tcl'         : '^\s*\(source\|proc\)\>.*'
+        \ , 'tex'         : '\C\\\(label\|\(sub\)*\(section\|paragraph\|part\)\)\>.*'
+        \ , 'vim'         : '\C^\(fu\%[nction]\|com\%[mand]\|if\|wh\%[ile]\)\>.*'
         \ }
     if exists("g:buffersaurus_filetype_term_map")
         " User-defined patterns have higher priority
@@ -448,9 +448,18 @@ function! s:NewIndexer()
 
     " set up element vocabulary
     let l:indexer["element_term_map"] = {
-        \ "PyClass"     : '^\s*class\s\+[A-Za-z_]\i\+(.*',
-        \ "PyDef"       : '^\s*def\s\+[A-Za-z_]\i\+(.*',
+        \   'PyClass'     : '^\s*class\s\+[A-Za-z_]\i\+(.*'
+        \ , 'PyDef'       : '^\s*def\s\+[A-Za-z_]\i\+(.*'
+        \ , 'VimFunction' : '^\C[:[:space:]]*fu\%[nction]\>!\=\s*\S\+('
+        \ , 'VimMapping'  : '^\C[:[:space:]]*[nvxsoilc]\=\(\%(nore\|un\)\=map\>\|mapclear\)\>'
+        \ , 'VimCommand'  : '^\C[:[:space:]]*com\%[mand]\>'
+        \ , 'CppClass'    : '^\s*\(\(public\|private\|protected\)\s*:\)\=\s*\(class\|struct\)\s\+\w\+\>\(\s*;\)\@!'
+        \ , 'CppTypedef'  : '^\s*\(\(public\|private\|protected\)\s*:\)\=\s*typedef\>'
+        \ , 'CppEnum'     : '^\s*\(\(public\|private\|protected\)\s*:\)\=\s*enum\>'
+        \ , 'CppTemplate' : '^\s*template\($\|<\)'
+        \ , 'CppPreproc'  : '^#'
         \ }
+
     if exists("g:buffersaurus_element_term_map")
         " User-defined patterns have higher priority
         call extend(l:indexer["element_term_map"], g:buffersaurus_element_term_map, 'force')

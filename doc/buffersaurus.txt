@@ -118,8 +118,14 @@ patterns. Executing this command will search for the regular expression
 referenced by the term. In essence, you can consider terms as "pre-defined" or
 "saved" search patterns, that can quickly and easily be run when needed .
 
-Buffersaurus comes with some example terms pre-defined, "PyClass"
-and "PyDef" (which match Python class and function definitions, respectively):
+Buffersaurus comes with some example terms pre-defined.
+
+ * PyClass and PyDef will match Python class definitions and function definitions
+ * CppClass, CppEnum, CppPreProc, CppTypedef, CppTemplate will match C++
+   classes and struct definitions, enums, preprocessor macros, typedefs and
+   templates
+ * VimCommand, VimFunction and VimMapping will match commands, functions and
+   mappings definitions inside vimscripts
 
         "PyClass"     : '^\s*class\s\+[A-Za-z_]\i\+(.*',
         "PyDef"       : '^\s*def\s\+[A-Za-z_]\i\+(.*',
