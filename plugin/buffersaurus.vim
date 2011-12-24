@@ -1737,7 +1737,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             endtry
             let working_buf_num = l:jump_to_buf_num
             let start_pos = getpos(".")
-            execute "silent! " . l:jump_to_lnum . command_text
+            execute "" . l:jump_to_lnum . command_text
         endfor
         if working_buf_num != catalog_buf_num
             call setpos('.', start_pos)
@@ -2106,7 +2106,7 @@ command! -bang -nargs=0                                           Bsstatus      
 
 " (development/debugging) "
 let g:buffersaurus_plugin_path = expand('<sfile>:p')
-command! -nargs=0               Bsreboot        :let g:did_buffersaurus = 0  | :execute("so " . g:buffersaurus_plugin_path)
+" command! -nargs=0               Bsreboot        :let g:did_buffersaurus = 0  | :execute("so " . g:buffersaurus_plugin_path)
 
 nnoremap <silent><Leader>[ :<C-U>Bsprev<CR>
 nnoremap <silent><Leader>] :<C-U>Bsnext<CR>
