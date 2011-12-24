@@ -1264,6 +1264,10 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             noremap <buffer> <silent> <C-N>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("n", 1, 1)<CR>
             noremap <buffer> <silent> <C-P>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
 
+            """"" Special operations
+            nnoremap <buffer> <silent> x        :call b:buffersaurus_catalog_viewer.execute_command("", 0)<CR>
+            nnoremap <buffer> <silent> X        :call b:buffersaurus_catalog_viewer.execute_command("", 1)<CR>
+
         else
 
             """" Index buffer management
@@ -1424,6 +1428,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
                             \ self.catalog.matched_lines[l:entry_indexes[0]].buf_num,
                             \ 1,
                             \ 1,
+                            \ 0,
+                            \ 0,
                             \ {"proxy_entry_index": l:entry_indexes[0]})
             endif
             for l:entry_index in l:entry_indexes
@@ -1458,7 +1464,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             let l:src_lines = self.fetch_buf_lines(l:buf_num, l:ln1, l:ln2)
             let l:indexed_line_summary = substitute(l:matched_line, '^\s*', '', 'g')
             let l:index_row = self.render_entry_index(a:index) . ' "' . l:buf_name . '", L' . l:ln1 . '-' . l:ln2 . ": " . l:indexed_line_summary
-            call self.append_line(l:index_row, a:index, l:buf_num, l:lnum, l:col)
+            call self.append_line(l:index_row, a:index, l:buf_num, l:lnum, l:col, 0, 0)
             for l:lnx in range(0, len(l:src_lines)-1)
                 let l:src_lnum = l:lnx + l:ln1
                 let l:rendered = "  "
@@ -1466,13 +1472,15 @@ function! s:NewCatalogViewer(catalog, desc, ...)
                 if l:src_lnum == l:lnum
                     let l:lborder = ">"
                     let l:rborder = ">"
+                    let l:is_matched_line = 1
                 else
                     let l:lborder = ":"
                     let l:rborder = ":"
+                    let l:is_matched_line = 0
                 endif
                 let l:rendered .= s:Format_AlignRight(l:src_lnum, s:buffersaurus_lnum_field_width, " ") . " " . l:rborder
                 let l:rendered .= " ".l:src_lines[l:lnx]
-                call self.append_line(l:rendered, a:index, l:buf_num, l:src_lnum, l:col)
+                call self.append_line(l:rendered, a:index, l:buf_num, l:src_lnum, l:col, 1, l:is_matched_line)
             endfor
         endif
     endfunction
@@ -1484,7 +1492,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         let l:src_line = self.fetch_buf_line(a:entry.buf_num, a:entry.lnum)
         if self.is_pass_filter(l:src_line)
             let l:rendered_line = "" . l:index_field . " ".l:lnum_field . ":   " . l:src_line
-            call self.append_line(l:rendered_line, a:index, a:entry.buf_num, a:entry.lnum, a:entry.col)
+            call self.append_line(l:rendered_line, a:index, a:entry.buf_num, a:entry.lnum, a:entry.col, 1, 1)
         endif
     endfunction
 
@@ -1494,11 +1502,13 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Appends a line to the buffer and registers it in the line log.
-    function! l:catalog_viewer.append_line(text, entry_index, jump_to_buf_num, jump_to_lnum, jump_to_col, ...) dict
+    function! l:catalog_viewer.append_line(text, entry_index, jump_to_buf_num, jump_to_lnum, jump_to_col, is_matched_line, is_content_line, ...) dict
         let l:line_map = {
                     \ "entry_index" : a:entry_index,
                     \ "entry_label" : get(self.catalog.entry_labels, a:entry_index, string(a:entry_index)),
                     \ "target" : [a:jump_to_buf_num, a:jump_to_lnum, a:jump_to_col, 0],
+                    \ "is_matched_line" : a:is_matched_line,
+                    \ "is_content_line" : a:is_content_line,
                     \ }
         if a:0 > 0
             call extend(l:line_map, a:1)
@@ -1663,6 +1673,47 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         endif
     endfunction
 
+    " Perform run command on all lines in the catalog
+    function! l:catalog_viewer.execute_command(command_text, include_context_lines) dict
+        if a:command_text == ""
+            let l:command_text = input("Command: ")
+        else
+            let l:command_text = a:command_text
+        endif
+        let catalog_buf_num = bufnr("%")
+        let catalog_buf_pos = getpos(".")
+        let working_buf_num = catalog_buf_num
+        let start_pos = getpos(".")
+        for l:cur_line in range(1, line("$"))
+            if !has_key(l:self.jump_map, l:cur_line)
+                continue
+            endif
+            let l:jump_entry = self.jump_map[l:cur_line]
+            if (!l:jump_entry.is_matched_line) && !(a:include_context_lines && l:jump_entry.is_content_line)
+                continue
+            endif
+            let [l:jump_to_buf_num, l:jump_to_lnum, l:jump_to_col, l:dummy] = l:jump_entry.target
+            if l:jump_to_buf_num != working_buf_num
+                if working_buf_num != catalog_buf_num
+                    call setpos('.', start_pos)
+                endif
+            endif
+            try
+                execute("silent! keepalt keepjumps buffer " . l:jump_to_buf_num)
+            catch //
+                continue
+            endtry
+            let working_buf_num = l:jump_to_buf_num
+            let start_pos = getpos(".")
+            execute "silent! " . l:jump_to_lnum . command_text
+        endfor
+        if working_buf_num != catalog_buf_num
+            call setpos('.', start_pos)
+        endif
+        execute("silent! keepalt keepjumps buffer " . l:catalog_buf_num)
+        call setpos('.', catalog_buf_pos)
+    endfunction
+
     " Visits the specified buffer in the previous window, if it is already
     " visible there. If not, then it looks for the first window with the
     " buffer showing and visits it there. If no windows are showing the
@@ -1683,7 +1734,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             execute("silent keepalt keepjumps " . l:split_cmd . " " . a:buf_num)
         endif
         let &switchbuf=l:old_switch_buf
-        endfunction
+    endfunction
 
     " Go to the line mapped to by the current line/index of the catalog
     " viewer.
