@@ -18,7 +18,7 @@ Global commands provided include (among others):
 
 Other commands include those for filtering results, jumping to next/previous
 matching line without opening the catalog, searching for special user-defined
-terms ("Bsterm") etc.
+terms (":Bsterm") etc.
 
 The results list can be browsed/navigated using all the usual Vim movement
 commands. Selected lines can be opened in the previous window, a new window
@@ -26,6 +26,10 @@ split (vertical or horizontal), or a new tab page. Context can be toggled (i.e.
 show a user-specified number of lines before or after the matching line).
 Results are grouped and sorted by filename, and then by line number, but can
 also be ungrouped and sorted lexically.
+
+Search and replace operations (using the ":Bsreplace" command, or "R" key
+mapping), or execution of arbitrary commands ("x" or "X" key mapping),
+can also be carried out on matched or contexted lines can be carried out
 
 Detailed usage description is given in the help file, which can be viewed
 on-line here:
