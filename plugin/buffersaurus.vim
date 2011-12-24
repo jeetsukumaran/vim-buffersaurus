@@ -1266,10 +1266,11 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             noremap <buffer> <silent> <C-P>       :<C-U>call b:buffersaurus_catalog_viewer.goto_index_entry("p", 1, 1)<CR>
 
             """"" Special operations
-            nnoremap <buffer> <silent> x        :call b:buffersaurus_catalog_viewer.execute_command("", 0)<CR>
-            nnoremap <buffer> <silent> X        :call b:buffersaurus_catalog_viewer.execute_command("", 1)<CR>
+            nnoremap <buffer> <silent> x        :call b:buffersaurus_catalog_viewer.execute_command("", 0, 1)<CR>
+            nnoremap <buffer> <silent> X        :call b:buffersaurus_catalog_viewer.execute_command("", 1, 1)<CR>
             nnoremap <buffer> <silent> R        :call b:buffersaurus_catalog_viewer.search_and_replace("", 0)<CR>
-            nnoremap <buffer> <silent> &        :call b:buffersaurus_catalog_viewer.search_and_replace("", 0)<CR>
+            nnoremap <buffer> <silent> <C-R>    :call b:buffersaurus_catalog_viewer.search_and_replace("", 0)<CR>
+            nnoremap <buffer> <silent> &        :call b:buffersaurus_catalog_viewer.search_and_replace("", 1)<CR>
 
         else
 
@@ -1348,19 +1349,25 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         else
             let l:include_context_lines = 0
         endif
-        if a:pattern == ""
-            let l:pattern = input("Search for: ")
-            let l:replace = input("Replace with: ")
+        if empty(a:pattern)
+            let l:pattern = input("Search for: ", s:last_searched_pattern)
+            if empty(l:pattern)
+                return
+            endif
+            let l:replace = input("Replace with: ", l:pattern)
+            if empty(l:replace)
+                return
+            endif
             for separator in ["/", "@", "'", "|", "!", "#", "$", "%", "^", "&", "*", "(", ")", "_", "-", "+", "=", ":"]
                 if !(l:pattern =~ '\'.separator || l:replace =~ '\'.separator)
                     break
                 endif
             endfor
-            let l:command = "s" . l:separator . l:pattern . l:separator . l:replace
+            let l:command = "s" . l:separator . l:pattern . l:separator . l:replace . l:separator . "ge"
         else
             let l:command = "s" . a:pattern
         endif
-        call self.execute_command(l:command, l:include_context_lines)
+        call self.execute_command(l:command, l:include_context_lines, 1)
     endfunction
 
     " Applies filter.
@@ -1699,7 +1706,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Perform run command on all lines in the catalog
-    function! l:catalog_viewer.execute_command(command_text, include_context_lines) dict
+    function! l:catalog_viewer.execute_command(command_text, include_context_lines, rebuild_catalog) dict
         if a:command_text == ""
             let l:command_text = input("Command: ")
         else
@@ -1736,6 +1743,9 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             call setpos('.', start_pos)
         endif
         execute("silent! keepalt keepjumps buffer " . l:catalog_buf_num)
+        if a:rebuild_catalog
+            call self.rebuild_catalog()
+        endif
         call setpos('.', catalog_buf_pos)
     endfunction
 
@@ -1961,6 +1971,7 @@ function! <SID>IndexPatterns(pattern, bang, sort_regime)
     endif
     let l:worklist = s:ComposeBufferTargetList(a:bang)
     let l:catalog = s:_buffersaurus_indexer.index_pattern(l:worklist, a:pattern, a:sort_regime)
+    let s:last_searched_pattern = a:pattern
     call s:ActivateCatalog("pattern", l:catalog)
     if !exists("g:buffersaurus_set_search_register") || g:buffersaurus_set_search_register
         let @/=a:pattern
@@ -2061,6 +2072,7 @@ if exists("s:_buffersaurus_buffer_manager")
     unlet s:_buffersaurus_buffer_manager
 endif
 let s:_buffersaurus_buffer_manager = s:NewBufferManager()
+let s:last_searched_pattern = ""
 if exists("s:_buffersaurus_messenger")
     unlet s:_buffersaurus_messenger
 endif

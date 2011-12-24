@@ -293,8 +293,8 @@ Mappings That Carry Out Special Operations~
 x                 Execute command on all matched lines.
 X                 Execute command all all matched and all context lines.
 R                 Search and replace operation on all matched lines.
-&                 Search and replace operation on all matched lines.
-
+<C-R>             Search and replace operation on all matched lines.
+&                 Search and replace operation on all context lines.
 
 ===============================================================================
                                                         *buffersaurus-options*
