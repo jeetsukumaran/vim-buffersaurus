@@ -7,6 +7,7 @@ CONTENTS~
     1. Introduction ....................... |buffersaurus-introduction|
     2. Basic Usage ........................ |buffersaurus-basic-usage|
     3. Special Searches ................... |buffersaurus-special-searches|
+    3. Special Operations ................. |buffersaurus-special-operations|
     4. Commands ........................... |buffersaurus-commands|
     5. Key Mappings ....................... |buffersaurus-keys|
     6. Options and Settings ............... |buffersaurus-options|
@@ -82,6 +83,10 @@ catalog viewer. You can just use the commands "|:Bsnext|" or "|:Bsprev|".  For
 convenience, you may want to map some keys to these commands if you find
 yourself using them a lot.
 
+In additon, Buffersaurus supports global replace operations ("|:Bsreplace|" or
+"R") or even the execution of arbitrary commands on the matched lines
+(|buffersaurus-special-operations|).
+
 ===============================================================================
                                                *buffersaurus-special-searches*
 SPECIAL SEARCHES~
@@ -133,6 +138,14 @@ Buffersaurus comes with some example terms pre-defined.
 You can add more definitions by providing the dictionary definition in your
 |$VIMRUNTIME| using the variable "|g:buffersaurus_element_term_map|". These
 definitions will extend Buffersaurus' built-in defintions.
+
+===============================================================================
+                                               *buffersaurus-special-operations*
+SPECIAL OPERATIONS~
+
+Buffersaurus lets you execute arbitrary commands on matched lines
+using the "x" and "X" key maps. A specialized global replace operation is
+available via the ":|Bsreplace|" command or "R" key map.
 
 ===============================================================================
                                                        *buffersaurus-commands*
@@ -194,6 +207,24 @@ Other commands~
                     if [filter-pattern] is "*" or ".*", then the saved pattern
                     will be cleared and the filter removed.
 
+:Bsre[eplace][!]    [substitute-pattern-string]                   *:Bsreplace*
+                    [Only available when inside a Buffergator catalog viewer
+                    buffer] Apply substitution command (|:substitute|) using
+                    [substitute-pattern-string] to all listed (unfilterd)
+                    matched lines. If "!" is specified, then substitution will
+                    be applied to all listed context lines, if any, as well.
+                    [substitute-pattern-string] is anything that follows
+                    the |:substitute| command, e.g.
+>
+                        :Bsreplace /foo/bar/gc
+                        :Bsreplace @field@plain@e
+                        :Bsreplace /def\s\+pr\(\w\+\)_out/def pr\1_err/g
+<
+                    If [substitution-pattern-string] is not given, then you
+                    will be prompted for a pattern to search for and a string
+                    with which to replace it. In this case, the flags "ge"
+                    will automatically be applied.
+
 ===============================================================================
                                                            *buffersaurus-keys*
 KEY MAPPINGS (CATALOG VIEWER)~
@@ -227,7 +258,7 @@ Movement Within the Catalog Viewer~
 [f                  Go the previous file entry.
 
 -------------------------------------------------------------------------------
-Mappings that jump to results~
+Mappings That Jump To Results~
 
 Several mappings are defined so that you can navigate quickly. A first series
 of mappings jumps to the target and hides the catalog viewer if the
@@ -255,6 +286,14 @@ in a new tab (t).
 |    (next entry)                      |  <space>  |       |       |     |
 |    (prev entry)                      | <c-space> |       |       |     |
 +--------------------------------------+-----------+-------+-------+-----+
+
+-------------------------------------------------------------------------------
+Mappings That Carry Out Special Operations~
+
+x                 Execute command on all matched lines.
+X                 Execute command all all matched and all context lines.
+R                 Search and replace operation on all matched lines.
+&                 Search and replace operation on all matched lines.
 
 
 ===============================================================================

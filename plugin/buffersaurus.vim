@@ -1192,7 +1192,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Sets buffer commands.
     function! l:catalog_viewer.setup_buffer_commands() dict
-        command! -bang -nargs=* Bsfilter :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
+        command! -bang -nargs=* Bsfilter  :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
+        command! -bang -nargs=* Bsreplace :call b:buffersaurus_catalog_viewer.search_and_replace('<bang>', <q-args>)
         augroup BuffersaurusCatalogViewer
             au!
             autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,BufEnter,BufLeave <buffer> call b:buffersaurus_catalog_viewer.highlight_current_line()
@@ -1267,6 +1268,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             """"" Special operations
             nnoremap <buffer> <silent> x        :call b:buffersaurus_catalog_viewer.execute_command("", 0)<CR>
             nnoremap <buffer> <silent> X        :call b:buffersaurus_catalog_viewer.execute_command("", 1)<CR>
+            nnoremap <buffer> <silent> R        :call b:buffersaurus_catalog_viewer.search_and_replace("", 0)<CR>
+            nnoremap <buffer> <silent> &        :call b:buffersaurus_catalog_viewer.search_and_replace("", 0)<CR>
 
         else
 
@@ -1336,6 +1339,28 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             " setlocal fillchars=fold:\ "
             setlocal fillchars=fold:.
         endif
+    endfunction
+
+    " Search and replace
+    function! l:catalog_viewer.search_and_replace(bang, pattern) dict
+        if a:bang
+            let l:include_context_lines = 1
+        else
+            let l:include_context_lines = 0
+        endif
+        if a:pattern == ""
+            let l:pattern = input("Search for: ")
+            let l:replace = input("Replace with: ")
+            for separator in ["/", "@", "'", "|", "!", "#", "$", "%", "^", "&", "*", "(", ")", "_", "-", "+", "=", ":"]
+                if !(l:pattern =~ '\'.separator || l:replace =~ '\'.separator)
+                    break
+                endif
+            endfor
+            let l:command = "s" . l:separator . l:pattern . l:separator . l:replace
+        else
+            let l:command = "s" . a:pattern
+        endif
+        call self.execute_command(l:command, l:include_context_lines)
     endfunction
 
     " Applies filter.
