@@ -1737,6 +1737,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             endtry
             let working_buf_num = l:jump_to_buf_num
             let start_pos = getpos(".")
+            " execute "silent! " . l:jump_to_lnum . command_text
             execute "" . l:jump_to_lnum . command_text
         endfor
         if working_buf_num != catalog_buf_num
