@@ -450,7 +450,7 @@ function! s:NewIndexer()
     let l:indexer["element_term_map"] = {
         \   'PyClass'     : '^\s*class\s\+[A-Za-z_]\i\+(.*'
         \ , 'PyDef'       : '^\s*def\s\+[A-Za-z_]\i\+(.*'
-        \ , 'VimFunction' : '^\C[:[:space:]]*fu\%[nction]\>!\=\s*\S\+('
+        \ , 'VimFunction' : '^\C[:[:space:]]*fu\%[nction]\>!\=\s*\S\+\s*('
         \ , 'VimMapping'  : '^\C[:[:space:]]*[nvxsoilc]\=\(\%(nore\|un\)\=map\>\|mapclear\)\>'
         \ , 'VimCommand'  : '^\C[:[:space:]]*com\%[mand]\>'
         \ , 'CppClass'    : '^\s*\(\(public\|private\|protected\)\s*:\)\=\s*\(class\|struct\)\s\+\w\+\>\(\s*;\)\@!'
