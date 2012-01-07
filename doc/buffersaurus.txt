@@ -1,8 +1,7 @@
 *buffersaurus.txt*	For Vim version 7.3	Last change: 2011 December 20
 
 ===============================================================================
-                                          *buffersaurus* *buffersaurus-contents*
-CONTENTS~
+CONTENTS                                  *buffersaurus* *buffersaurus-contents*
 
     1. Introduction ....................... |buffersaurus-introduction|
     2. Basic Usage ........................ |buffersaurus-basic-usage|
@@ -13,8 +12,7 @@ CONTENTS~
     6. Options and Settings ............... |buffersaurus-options|
 
 ===============================================================================
-                                                   *buffersaurus-introduction*
-INTRODUCTION~
+INTRODUCTION                                       *buffersaurus-introduction*
 
 Buffersaurus is a plugin for searching and indexing the contents of buffers
 for regular expression patterns or collections of regular expression patterns.
@@ -23,8 +21,7 @@ user-specifiable lines of context (i.e., a number of lines before and/or after
 the line matching the search pattern) or filtered for specific patterns.
 
 ===============================================================================
-                                                    *buffersaurus-basic-usage*
-BASIC USAGE~
+BASIC USAGE                                         *buffersaurus-basic-usage*
 
 The command "|:Bsgrep| {pattern}" is the most general way of invoking
 Buffersaurus. It will search all listed buffers for lines of text matching the
@@ -89,8 +86,7 @@ lines (|buffersaurus-special-operations|). A global command for searching and
 replacing ("|:Bsreplace|") is also provided.
 
 ===============================================================================
-                                               *buffersaurus-special-searches*
-SPECIAL SEARCHES~
+SPECIAL SEARCHES                               *buffersaurus-special-searches*
 
 Buffersaurus provides two other approaches to search beyond the explicitly
 single regular expression pattern-based approach described above.
@@ -141,16 +137,14 @@ You can add more definitions by providing the dictionary definition in your
 definitions will extend Buffersaurus' built-in defintions.
 
 ===============================================================================
-                                               *buffersaurus-special-operations*
-SPECIAL OPERATIONS~
+SPECIAL OPERATIONS                           *buffersaurus-special-operations*
 
 Buffersaurus lets you execute arbitrary commands on matched lines
 using the "x" and "X" key maps. A specialized global replace operation is
 available via the ":|Bssubstitute|" command or "R"/"<C-R>"/"&" key maps.
 
 ===============================================================================
-                                                       *buffersaurus-commands*
-COMMANDS~
+COMMANDS                                               *buffersaurus-commands*
 
 -------------------------------------------------------------------------------
 Catalog generation commands~
@@ -232,8 +226,7 @@ Other commands~
                     will automatically be applied.
 
 ===============================================================================
-                                                           *buffersaurus-keys*
-KEY MAPPINGS (CATALOG VIEWER)~
+KEY MAPPINGS (CATALOG VIEWER)                              *buffersaurus-keys*
 
 Search results are stored a "catalog", and displayed in special buffer
 referred to as a "catalog viewer".  The following key mappings are available
@@ -306,8 +299,7 @@ R                 Search and replace operation on all matched lines (will
                   prompt for search pattern as well as replace string).
 
 ===============================================================================
-                                                        *buffersaurus-options*
-OPTIONS AND SETTINGS~
+OPTIONS AND SETTINGS                                    *buffersaurus-options*
 
 The following options can be used to customize the behavior of this plugin.
 
