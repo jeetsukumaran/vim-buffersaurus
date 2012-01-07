@@ -1192,8 +1192,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Sets buffer commands.
     function! l:catalog_viewer.setup_buffer_commands() dict
-        command! -bang -nargs=* Bsfilter  :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
-        command! -bang -nargs=* Bsreplace :call b:buffersaurus_catalog_viewer.search_and_replace('<bang>', <q-args>, 0)
+        command! -buffer -bang -nargs=* Bsfilter  :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
+        command! -buffer -bang -nargs=* Bsreplace :call b:buffersaurus_catalog_viewer.search_and_replace('<bang>', <q-args>, 0)
         augroup BuffersaurusCatalogViewer
             au!
             autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,BufEnter,BufLeave <buffer> call b:buffersaurus_catalog_viewer.highlight_current_line()
@@ -1969,6 +1969,24 @@ function! <SID>IndexTags(bang)
     call s:ActivateCatalog("tags", l:catalog)
 endfunction
 
+function! <SID>GlobalSearchAndReplace()
+    let l:pattern = input("Search for: ", s:last_searched_pattern)
+    if empty(l:pattern)
+        return
+    endif
+    let l:worklist = s:ComposeBufferTargetList(0)
+    let l:catalog = s:_buffersaurus_indexer.index_pattern(l:worklist, l:pattern, '')
+    let s:last_searched_pattern = l:pattern
+    let s:_buffersaurus_last_catalog_built = l:catalog
+    let s:_buffersaurus_last_catalog_viewed = l:catalog.open()
+    if l:catalog.size() > 0
+        call l:catalog.describe()
+        call s:_buffersaurus_last_catalog_viewed.search_and_replace(0, "", 1)
+    else
+        call s:_buffersaurus_messenger.send_status("no matches")
+    endif
+endfunction
+
 function! <SID>IndexPatterns(pattern, bang, sort_regime)
     if empty(a:pattern)
         call s:_buffersaurus_messenger.send_error("search pattern must be specified")
@@ -2108,6 +2126,7 @@ command! -nargs=0                                                 Bsopen        
 command! -range -bang -nargs=0                                    Bsnext          :call <SID>GotoEntry("n")
 command! -range -bang -nargs=0                                    Bsprev          :call <SID>GotoEntry("p")
 command! -bang -nargs=0                                           Bsstatus        :call <SID>ShowCatalogStatus('<bang>')
+command!       -nargs=0                                           Bschange        :call <SID>GlobalSearchAndReplace()
 
 " (development/debugging) "
 let g:buffersaurus_plugin_path = expand('<sfile>:p')

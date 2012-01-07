@@ -178,6 +178,11 @@ However the banged versions of the commands will invert this behaviour.
                     See |buffersaurus-term-patterns| for information on
                     defining and using terms.
 
+:Bschange
+                    Global search and replace. Will be prompted for a pattern
+                    for which to search for, and, if any matches, a string
+                    with which to replace the pattern.
+
 -------------------------------------------------------------------------------
 Other commands~
 
