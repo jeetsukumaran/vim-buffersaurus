@@ -1192,8 +1192,8 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Sets buffer commands.
     function! l:catalog_viewer.setup_buffer_commands() dict
-        command! -buffer -bang -nargs=* Bsfilter  :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
-        command! -buffer -bang -nargs=* Bsreplace :call b:buffersaurus_catalog_viewer.search_and_replace('<bang>', <q-args>, 0)
+        command! -buffer -bang -nargs=* Bsfilter     :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
+        command! -buffer -bang -nargs=* Bssubstitute :call b:buffersaurus_catalog_viewer.search_and_replace('<bang>', <q-args>, 0)
         augroup BuffersaurusCatalogViewer
             au!
             autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,BufEnter,BufLeave <buffer> call b:buffersaurus_catalog_viewer.highlight_current_line()
@@ -2125,8 +2125,8 @@ command! -bang -nargs=1 -complete=customlist,<SID>Complete_bsterm Bsterm        
 command! -nargs=0                                                 Bsopen          :call <SID>OpenLastActiveCatalog()
 command! -range -bang -nargs=0                                    Bsnext          :call <SID>GotoEntry("n")
 command! -range -bang -nargs=0                                    Bsprev          :call <SID>GotoEntry("p")
-command! -bang -nargs=0                                           Bsstatus        :call <SID>ShowCatalogStatus('<bang>')
-command!       -nargs=0                                           Bschange        :call <SID>GlobalSearchAndReplace()
+command! -bang -nargs=0                                           Bsinfo          :call <SID>ShowCatalogStatus('<bang>')
+command!       -nargs=0                                           Bsreplace       :call <SID>GlobalSearchAndReplace()
 
 " (development/debugging) "
 let g:buffersaurus_plugin_path = expand('<sfile>:p')
