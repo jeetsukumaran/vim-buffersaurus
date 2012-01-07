@@ -1193,7 +1193,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     " Sets buffer commands.
     function! l:catalog_viewer.setup_buffer_commands() dict
         command! -bang -nargs=* Bsfilter  :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
-        command! -bang -nargs=* Bsreplace :call b:buffersaurus_catalog_viewer.search_and_replace('<bang>', <q-args>)
+        command! -bang -nargs=* Bsreplace :call b:buffersaurus_catalog_viewer.search_and_replace('<bang>', <q-args>, 0)
         augroup BuffersaurusCatalogViewer
             au!
             autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,BufEnter,BufLeave <buffer> call b:buffersaurus_catalog_viewer.highlight_current_line()
@@ -1268,9 +1268,9 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             """"" Special operations
             nnoremap <buffer> <silent> x        :call b:buffersaurus_catalog_viewer.execute_command("", 0, 1)<CR>
             nnoremap <buffer> <silent> X        :call b:buffersaurus_catalog_viewer.execute_command("", 1, 1)<CR>
-            nnoremap <buffer> <silent> R        :call b:buffersaurus_catalog_viewer.search_and_replace("", 0)<CR>
-            nnoremap <buffer> <silent> <C-R>    :call b:buffersaurus_catalog_viewer.search_and_replace("", 0)<CR>
-            nnoremap <buffer> <silent> &        :call b:buffersaurus_catalog_viewer.search_and_replace("", 1)<CR>
+            nnoremap <buffer> <silent> R        :call b:buffersaurus_catalog_viewer.search_and_replace("", 0, 1)<CR>
+            nnoremap <buffer> <silent> <C-R>    :call b:buffersaurus_catalog_viewer.search_and_replace("", 0, 1)<CR>
+            nnoremap <buffer> <silent> &        :call b:buffersaurus_catalog_viewer.search_and_replace("", 0, 1)<CR>
 
         else
 
@@ -1343,16 +1343,20 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Search and replace
-    function! l:catalog_viewer.search_and_replace(bang, pattern) dict
+    function! l:catalog_viewer.search_and_replace(bang, sr_pattern, assume_last_search_pattern) dict
         if a:bang
             let l:include_context_lines = 1
         else
             let l:include_context_lines = 0
         endif
-        if empty(a:pattern)
-            let l:pattern = input("Search for: ", s:last_searched_pattern)
-            if empty(l:pattern)
-                return
+        if empty(a:sr_pattern)
+            if a:assume_last_search_pattern
+                let l:pattern = s:last_searched_pattern
+            else
+                let l:pattern = input("Search for: ", s:last_searched_pattern)
+                if empty(l:pattern)
+                    return
+                endif
             endif
             let l:replace = input("Replace with: ", l:pattern)
             if empty(l:replace)
@@ -1365,7 +1369,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             endfor
             let l:command = "s" . l:separator . l:pattern . l:separator . l:replace . l:separator . "ge"
         else
-            let l:command = "s" . a:pattern
+            let l:command = "s" . a:sr_pattern
         endif
         call self.execute_command(l:command, l:include_context_lines, 1)
     endfunction
