@@ -825,6 +825,17 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
         return self.compile_entry_indexes()
     endfunction
 
+    " Cycles autodismiss modes
+    function! l:catalog_viewer.cycle_autodismiss_modes() dict
+        if (g:buffersaurus_autodismiss_on_select)
+            let g:buffersaurus_autodismiss_on_select = 0
+        call s:_buffersaurus_messenger.send_info("will stay open on selection (autodismiss-on-select: OFF)")
+        else
+            let g:buffersaurus_autodismiss_on_select = 1
+        call s:_buffersaurus_messenger.send_info("will close on selection (autodismiss-on-select: ON)")
+        endif
+    endfunction
+
     " compiles matches into index
     function! l:catalog.compile_entry_indexes() dict
         let self.entry_indexes = []
@@ -1218,6 +1229,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             noremap <buffer> <silent> cc      :call b:buffersaurus_catalog_viewer.toggle_context()<CR>
             noremap <buffer> <silent> C       :call b:buffersaurus_catalog_viewer.toggle_context()<CR>
             noremap <buffer> <silent> cs      :call b:buffersaurus_catalog_viewer.cycle_sort_regime()<CR>
+            noremap <buffer> <silent> cq      :call b:buffersaurus_catalog_viewer.cycle_autodismiss_modes()<CR>
             noremap <buffer> <silent> f       :call b:buffersaurus_catalog_viewer.toggle_filter()<CR>
             noremap <buffer> <silent> F       :call b:buffersaurus_catalog_viewer.prompt_and_apply_filter()<CR>
             noremap <buffer> <silent> r       :call b:buffersaurus_catalog_viewer.rebuild_catalog()<CR>
