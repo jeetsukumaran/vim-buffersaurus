@@ -825,17 +825,6 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
         return self.compile_entry_indexes()
     endfunction
 
-    " Cycles autodismiss modes
-    function! l:catalog_viewer.cycle_autodismiss_modes() dict
-        if (g:buffersaurus_autodismiss_on_select)
-            let g:buffersaurus_autodismiss_on_select = 0
-        call s:_buffersaurus_messenger.send_info("will stay open on selection (autodismiss-on-select: OFF)")
-        else
-            let g:buffersaurus_autodismiss_on_select = 1
-        call s:_buffersaurus_messenger.send_info("will close on selection (autodismiss-on-select: ON)")
-        endif
-    endfunction
-
     " compiles matches into index
     function! l:catalog.compile_entry_indexes() dict
         let self.entry_indexes = []
@@ -1926,6 +1915,17 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         call self.catalog.rebuild()
         call s:_buffersaurus_messenger.send_info("updated index: found " . self.catalog.format_status_message())
         call self.open(1)
+    endfunction
+
+    " Cycles autodismiss modes
+    function! l:catalog_viewer.cycle_autodismiss_modes() dict
+        if (g:buffersaurus_autodismiss_on_select)
+            let g:buffersaurus_autodismiss_on_select = 0
+        call s:_buffersaurus_messenger.send_info("will stay open on selection (autodismiss-on-select: OFF)")
+        else
+            let g:buffersaurus_autodismiss_on_select = 1
+        call s:_buffersaurus_messenger.send_info("will close on selection (autodismiss-on-select: ON)")
+        endif
     endfunction
 
     " return object
