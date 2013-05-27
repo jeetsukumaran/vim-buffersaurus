@@ -2025,7 +2025,7 @@ function! buffersaurus#OpenLastActiveCatalog()
 endfunction
 
 function! buffersaurus#GotoEntry(direction)
-    if <SID>OpenLastActiveCatalog()
+    if buffersaurus#OpenLastActiveCatalog()
         call s:_buffersaurus_last_catalog_viewed.goto_index_entry(a:direction, 1, 0)
     endif
 endfunction
