@@ -241,6 +241,8 @@ P                   Toggle flashing of indexed line on/off
                     Also see |g:buffersaurus_flash_jumped_line|
 cs                  Cycle through sort regimes.
                     Also see |g:buffersaurus_sort_regime|
+cq                  Toggle "pinning": whether or the catalog viewer is closed
+                    on selection. See |g:buffersaurus_autodismiss_on_select|.
 f                   Filter results for lines matching pattern.
 F                   Enter and apply a new filter pattern
 r                   Rebuild/refresh the index.
@@ -269,22 +271,22 @@ window (involving letter o), two mappings display it in a new split (s for a
 vertical split, i for an horizontal split), and a mapping displays the target
 in a new tab (t).
 
-+--------------------------------------+-----------+-------+-------+-----+
-|          Location of the target      | previous  | vert  | horiz | new |
-|                                      |  window   | split | split | tab |
-+--------------------------------------+-----------+-------+-------+-----+
-| Jump to target and dismiss the       |           |       |       |     |
-| catalog viewer if                    |  <CR>, o  |   s   |   i   |  t  |
-| |g:buffersaurus_autodismiss_on_select| |           |       |       |     |
-+--------------------------------------+-----------+-------+-------+-----+
-| Jump to target and leave the         |     po    |  ps   |  pi   | pt  |
-| catalog viewer visible               |           |       |       |     |
-+--------------------------------------+-----------+-------+-------+-----+
-| Preview target, keep focus on the    |   O, go   | S, gs | I, gi |  T  |
-| catalog viewer                       |           |       |       |     |
-|    (next entry)                      |  <space>  |       |       |     |
-|    (prev entry)                      | <c-space> |       |       |     |
-+--------------------------------------+-----------+-------+-------+-----+
++--------------------------------------+-----------+----------+----------+---------+
+| Location of the target               | previous  | vert     | horiz    | new     |
+|                                      |  window   | split    | split    | tab     |
++--------------------------------------+-----------+----------+----------+---------+
+| Jump to target and dismiss the       |           |          |          |         |
+| catalog viewer if                    |  <CR>, o  | <C-v>, s | <C-s>, i | <C-t> t |
+| |g:buffersaurus_autodismiss_on_select| |           |          |          |         |
++--------------------------------------+-----------+----------+----------+---------+
+| Jump to target and leave the         |     po    |  ps      |  pi      | pt      |
+| catalog viewer visible               |           |          |          |         |
++--------------------------------------+-----------+----------+----------+---------+
+| Preview target, keep focus on the    |   O, go   | S, gs    | I, gi    |  T      |
+| catalog viewer                       |           |          |          |         |
+|    (next entry)                      |  <space>  |          |          |         |
+|    (prev entry)                      | <c-space> |          |          |         |
++--------------------------------------+-----------+----------+----------+---------+
 
 -------------------------------------------------------------------------------
 Mappings That Carry Out Special Operations~

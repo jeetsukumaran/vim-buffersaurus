@@ -1239,8 +1239,11 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             noremap <buffer> <silent> <CR>  :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "")<CR>
             noremap <buffer> <silent> o     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "")<CR>
             noremap <buffer> <silent> s     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "vert sb")<CR>
+            noremap <buffer> <silent> <C-v> :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "vert sb")<CR>
             noremap <buffer> <silent> i     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "sb")<CR>
+            noremap <buffer> <silent> <C-s> :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "sb")<CR>
             noremap <buffer> <silent> t     :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "tab sb")<CR>
+            noremap <buffer> <silent> <C-t> :call b:buffersaurus_catalog_viewer.visit_target(!g:buffersaurus_autodismiss_on_select, 0, "tab sb")<CR>
 
             """"" Selection: show target and switch focus, preserving the catalog regardless of the autodismiss setting
             noremap <buffer> <silent> po          :<C-U>call b:buffersaurus_catalog_viewer.visit_target(1, 0, "")<CR>
