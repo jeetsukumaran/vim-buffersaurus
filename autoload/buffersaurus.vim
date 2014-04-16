@@ -1221,6 +1221,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             noremap <buffer> <silent> <C-G>   :call b:buffersaurus_catalog_viewer.catalog.describe()<CR>
             noremap <buffer> <silent> g<C-G>  :call b:buffersaurus_catalog_viewer.catalog.describe_detail()<CR>
             noremap <buffer> <silent> q       :call b:buffersaurus_catalog_viewer.close(1)<CR>
+            noremap <buffer> <silent> <ESC>   :call b:buffersaurus_catalog_viewer.close(1)<CR>
 
             """" Movement within buffer
 
