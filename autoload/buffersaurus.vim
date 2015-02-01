@@ -388,7 +388,7 @@ function! s:NewBufferManager()
 
     " Detect filetype. From the 'taglist' plugin.
     " Copyright (C) 2002-2007 Yegappan Lakshmanan
-    function! buffer_manager:detect_filetype(fname)
+    function! buffer_manager.detect_filetype(fname)
         " Ignore the filetype autocommands
         let old_eventignore = &eventignore
         set eventignore=FileType
