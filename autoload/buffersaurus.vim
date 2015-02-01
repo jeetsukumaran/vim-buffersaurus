@@ -181,49 +181,49 @@ endfunction
 function! s:NewMessenger(name)
 
     " allocate a new pseudo-object
-    let l:messenger = {}
-    let l:messenger["name"] = a:name
+    let messenger = {}
+    let messenger["name"] = a:name
     if empty(a:name)
-        let l:messenger["title"] = "buffersaurus"
+        let messenger["title"] = "buffersaurus"
     else
-        let l:messenger["title"] = "buffersaurus (" . l:messenger["name"] . ")"
+        let messenger["title"] = "buffersaurus (" . messenger["name"] . ")"
     endif
 
-    function! l:messenger.format_message(leader, msg) dict
+    function! messenger.format_message(leader, msg) dict
         return self.title . ": " . a:leader.a:msg
     endfunction
 
-    function! l:messenger.format_exception( msg) dict
+    function! messenger.format_exception( msg) dict
         return a:msg
     endfunction
 
-    function! l:messenger.send_error(msg) dict
+    function! messenger.send_error(msg) dict
         redraw
         echohl ErrorMsg
         echomsg self.format_message("[ERROR] ", a:msg)
         echohl None
     endfunction
 
-    function! l:messenger.send_warning(msg) dict
+    function! messenger.send_warning(msg) dict
         redraw
         echohl WarningMsg
         echomsg self.format_message("[WARNING] ", a:msg)
         echohl None
     endfunction
 
-    function! l:messenger.send_status(msg) dict
+    function! messenger.send_status(msg) dict
         redraw
         echohl None
         echomsg self.format_message("", a:msg)
     endfunction
 
-    function! l:messenger.send_info(msg) dict
+    function! messenger.send_info(msg) dict
         redraw
         echohl None
         echo self.format_message("", a:msg)
     endfunction
 
-    return l:messenger
+    return messenger
 
 endfunction
 " 2}}}
@@ -237,11 +237,11 @@ endfunction
 function! s:NewBufferManager()
 
     " initialize
-    let l:buffer_manager = {}
+    let buffer_manager = {}
 
     " Returns a list of all existing buffer numbers, excluding unlisted ones
     " unless `include_unlisted` is non-empty.
-    function! l:buffer_manager.get_buf_nums(include_unlisted)
+    function! buffer_manager.get_buf_nums(include_unlisted)
         let l:buf_num_list = []
         for l:idx in range(1, bufnr("$"))
             if bufexists(l:idx) && (empty(a:include_unlisted) || buflisted(l:idx))
@@ -253,7 +253,7 @@ function! s:NewBufferManager()
 
     " Returns a list of all existing buffer names, excluding unlisted ones
     " unless `include_unlisted` is non-empty.
-    function! l:buffer_manager.get_buf_names(include_unlisted, expand_modifiers)
+    function! buffer_manager.get_buf_names(include_unlisted, expand_modifiers)
         let l:buf_name_list = []
         for l:idx in range(1, bufnr("$"))
             if bufexists(l:idx) && (empty(!a:include_unlisted) || buflisted(l:idx))
@@ -266,7 +266,7 @@ function! s:NewBufferManager()
     " Searches for all windows that have a window-scoped variable `varname`
     " with value that matches the expression `expr`. Returns list of window
     " numbers that meet the criterion.
-    function! l:buffer_manager.find_windows_with_var(varname, expr)
+    function! buffer_manager.find_windows_with_var(varname, expr)
         let l:results = []
         for l:wni in range(1, winnr("$"))
             let l:wvar = getwinvar(l:wni, "")
@@ -282,7 +282,7 @@ function! s:NewBufferManager()
     " Searches for all buffers that have a buffer-scoped variable `varname`
     " with value that matches the expression `expr`. Returns list of buffer
     " numbers that meet the criterion.
-    function! l:buffer_manager.find_buffers_with_var(varname, expr)
+    function! buffer_manager.find_buffers_with_var(varname, expr)
         let l:results = []
         for l:bni in range(1, bufnr("$"))
             if !bufexists(l:bni)
@@ -302,7 +302,7 @@ function! s:NewBufferManager()
     " and the parsed information regarding each buffer as values. If `key` is
     " given (e.g. key='num'; key='name', key='filepath') then that field will
     " be used as the dictionary keys instead.
-    function! l:buffer_manager.get_buffers_info(key) dict
+    function! buffer_manager.get_buffers_info(key) dict
         if empty(a:key)
             let l:key = "num"
         else
@@ -378,7 +378,7 @@ function! s:NewBufferManager()
     endfunction
 
     " Returns split mode to use for a new Buffersaurus viewport.
-    function! l:buffer_manager.get_split_mode() dict
+    function! buffer_manager.get_split_mode() dict
         if has_key(s:buffersaurus_viewport_split_modes, g:buffersaurus_viewport_split_policy)
             return s:buffersaurus_viewport_split_modes[g:buffersaurus_viewport_split_policy]
         else
@@ -388,7 +388,7 @@ function! s:NewBufferManager()
 
     " Detect filetype. From the 'taglist' plugin.
     " Copyright (C) 2002-2007 Yegappan Lakshmanan
-    function! l:buffer_manager:detect_filetype(fname)
+    function! buffer_manager:detect_filetype(fname)
         " Ignore the filetype autocommands
         let old_eventignore = &eventignore
         set eventignore=FileType
@@ -405,7 +405,7 @@ function! s:NewBufferManager()
         return ftype
     endfunction
 
-    return l:buffer_manager
+    return buffer_manager
 endfunction
 
 " 1}}}
@@ -417,10 +417,10 @@ endfunction
 function! s:NewIndexer()
 
     " create/clear
-    let l:indexer = {}
+    let indexer = {}
 
     " set up filetype vocabulary
-    let l:indexer["filetype_term_map"] = {
+    let indexer["filetype_term_map"] = {
         \   'bib'         : '^@\w\+\s*{\s*\zs\S\{-}\ze\s*,'
         \ , 'c'           : '^[[:alnum:]#].*'
         \ , 'cpp'         : '^[[:alnum:]#].*'
@@ -439,11 +439,11 @@ function! s:NewIndexer()
         \ }
     if exists("g:buffersaurus_filetype_term_map")
         " User-defined patterns have higher priority
-        call extend(l:indexer["filetype_term_map"], g:buffersaurus_filetype_term_map, 'force')
+        call extend(indexer["filetype_term_map"], g:buffersaurus_filetype_term_map, 'force')
     endif
 
     " set up element vocabulary
-    let l:indexer["element_term_map"] = {
+    let indexer["element_term_map"] = {
         \   'PyClass'     : '^\s*class\s\+[A-Za-z_]\i\+(.*'
         \ , 'PyDef'       : '^\s*def\s\+[A-Za-z_]\i\+(.*'
         \ , 'VimFunction' : '^\C[:[:space:]]*fu\%[nction]\>!\=\s*\S\+\s*('
@@ -458,7 +458,7 @@ function! s:NewIndexer()
 
     if exists("g:buffersaurus_element_term_map")
         " User-defined patterns have higher priority
-        call extend(l:indexer["element_term_map"], g:buffersaurus_element_term_map, 'force')
+        call extend(indexer["element_term_map"], g:buffersaurus_element_term_map, 'force')
     endif
 
     " Indexes all files given by the list `filepaths` for the regular
@@ -466,7 +466,7 @@ function! s:NewIndexer()
     " `term_id` is empty, the default filetype pattern is used. If
     " `filepaths` is empty, then all
     " listed buffers are indexed.
-    function! l:indexer.index_terms(filepaths, term_id, sort_regime) dict
+    function! indexer.index_terms(filepaths, term_id, sort_regime) dict
         let l:old_hidden = &hidden
         set hidden
         let l:worklist = self.ensure_buffers(a:filepaths)
@@ -482,17 +482,17 @@ function! s:NewIndexer()
         else
             let l:desc .= " (in multiple files)"
         endif
-        let l:catalog = s:NewCatalog("term", l:desc, a:sort_regime)
+        let catalog = s:NewCatalog("term", l:desc, a:sort_regime)
         for buf_ref in l:worklist
             let l:pattern = self.get_buffer_term_pattern(buf_ref, a:term_id)
-            call l:catalog.map_buffer(buf_ref, l:pattern)
+            call catalog.map_buffer(buf_ref, l:pattern)
         endfor
         let &hidden=l:old_hidden
-        return l:catalog
+        return catalog
     endfunction
 
     " Indexes all files given by the list `filepaths` for tags.
-    function! l:indexer.index_tags(filepaths) dict
+    function! indexer.index_tags(filepaths) dict
         let l:old_hidden = &hidden
         set hidden
         let l:worklist = self.ensure_buffers(a:filepaths)
@@ -504,18 +504,18 @@ function! s:NewIndexer()
         else
             let l:desc .= " (in multiple files)"
         endif
-        let l:catalog = s:NewTagCatalog("tag", l:desc)
+        let catalog = s:NewTagCatalog("tag", l:desc)
         for buf_ref in l:worklist
-            call l:catalog.map_buffer(buf_ref)
+            call catalog.map_buffer(buf_ref)
         endfor
         let &hidden=l:old_hidden
-        return l:catalog
+        return catalog
     endfunction
 
     " Indexes all files given by the list `filepaths` for the regular
     " expression given by `pattern`. If `filepaths` is empty, then all
     " listed buffers are indexed.
-    function! l:indexer.index_pattern(filepaths, pattern, sort_regime) dict
+    function! indexer.index_pattern(filepaths, pattern, sort_regime) dict
         let l:old_hidden = &hidden
         set hidden
         let l:worklist = self.ensure_buffers(a:filepaths)
@@ -528,16 +528,16 @@ function! s:NewIndexer()
         else
             let l:desc .= " (in multiple files)"
         endif
-        let l:catalog = s:NewCatalog("pattern", l:desc, a:sort_regime)
+        let catalog = s:NewCatalog("pattern", l:desc, a:sort_regime)
         for buf_ref in l:worklist
-            call l:catalog.map_buffer(buf_ref, a:pattern)
+            call catalog.map_buffer(buf_ref, a:pattern)
         endfor
         let &hidden=l:old_hidden
-        return l:catalog
+        return catalog
     endfunction
 
     " returns pattern to be used when indexing terms for a particular buffer
-    function! l:indexer.get_buffer_term_pattern(buf_num, term_id) dict
+    function! indexer.get_buffer_term_pattern(buf_num, term_id) dict
         let l:pattern = ""
         if !empty(a:term_id)
             try
@@ -564,7 +564,7 @@ function! s:NewIndexer()
     " Given a list of buffer references, `buf_refs` this will ensure than
     " all the files/buffers are loaded and return a list of the buffer names.
     " If `buf_refs` is empty, then all listed buffers are loaded.
-    function! l:indexer.ensure_buffers(buf_refs)
+    function! indexer.ensure_buffers(buf_refs)
         let l:cur_pos = getpos(".")
         let l:cur_buf_num = bufnr("%")
         if empty(a:buf_refs)
@@ -601,7 +601,7 @@ function! s:NewIndexer()
         return l:work_list
     endfunction
 
-    return l:indexer
+    return indexer
 
 endfunction
 
@@ -622,7 +622,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
 
     " initialize fields
     let l:var_name = a:catalog_domain
-    let l:catalog = {
+    let catalog = {
                 \ "catalog_id"          : s:buffersaurus_catalog_count,
                 \ "catalog_domain"      : a:catalog_domain,
                 \ "catalog_desc"        : a:catalog_desc,
@@ -641,7 +641,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
                 \}
 
     " sets the display context
-    function! l:catalog.set_context_size(...) dict
+    function! catalog.set_context_size(...) dict
         let l:context = self.context_size
         for l:carg in range(a:0)
             if a:000[l:carg] == ""
@@ -664,7 +664,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " determine whether or not context should be shown
-    function! l:catalog.is_show_context() dict
+    function! catalog.is_show_context() dict
         if !self.show_context
             return 0
         else
@@ -677,7 +677,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " clears all items
-    function! l:catalog.clear() dict
+    function! catalog.clear() dict
         let self.matched_lines = []
         let self.search_history = []
         let self.searched_files = {}
@@ -689,12 +689,12 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " number of entries in the catalog
-    function! l:catalog.size() dict
+    function! catalog.size() dict
         return len(self.matched_lines)
     endfunction
 
     " carry out search given in the search profile
-    function l:catalog.build(...) dict
+    function catalog.build(...) dict
         call self.clear()
         if a:0 >= 1
             let self.search_profile = a:1
@@ -705,7 +705,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " repeat last search
-    function l:catalog.rebuild() dict
+    function catalog.rebuild() dict
         if empty(self.search_history)
             raise s:_buffersaurus_messenger.format_exception("Search history is empty")
         endif
@@ -719,7 +719,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " index all occurrences of `pattern` in buffer `buf_ref`
-    function! l:catalog.map_buffer(buf_ref, pattern) dict
+    function! catalog.map_buffer(buf_ref, pattern) dict
         if type(a:buf_ref) == type(0)
             let l:buf_num = a:buf_ref
             let l:buf_name = bufname(l:buf_num)
@@ -774,7 +774,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " open the catalog for viewing
-    function! l:catalog.open() dict
+    function! catalog.open() dict
         if !has_key(self, "catalog_viewer") || empty(self.catalog_viewer)
             let self["catalog_viewer"] = s:NewCatalogViewer(self, self.catalog_desc)
         endif
@@ -784,7 +784,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
 
     " returns indexes of matched lines, compiling them if
     " needed
-    function! l:catalog.get_index_groups() dict
+    function! catalog.get_index_groups() dict
         if self.last_compile_time < self.last_search_time
             call self.compile_entry_indexes()
         endif
@@ -792,7 +792,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " returns true if sort regime dictates that indexes are grouped
-    function! l:catalog.is_sort_grouped() dict
+    function! catalog.is_sort_grouped() dict
         if self.sort_regime == 'a'
             return 0
         else
@@ -801,7 +801,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " apply a sort regime
-    function! l:catalog.apply_sort(regime) dict
+    function! catalog.apply_sort(regime) dict
         if index(s:buffersaurus_catalog_sort_regimes, a:regime) == - 1
             throw s:_buffersaurus_messenger.format_exception("Unrecognized sort regime: '" . a:regime . "'")
         endif
@@ -810,7 +810,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " cycle through sort regimes
-    function! l:catalog.cycle_sort_regime() dict
+    function! catalog.cycle_sort_regime() dict
         let l:cur_regime = index(s:buffersaurus_catalog_sort_regimes, self.sort_regime)
         let l:cur_regime += 1
         if l:cur_regime < 0 || l:cur_regime >= len(s:buffersaurus_catalog_sort_regimes)
@@ -822,7 +822,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " compiles matches into index
-    function! l:catalog.compile_entry_indexes() dict
+    function! catalog.compile_entry_indexes() dict
         let self.entry_indexes = []
         let self.entry_labels = {}
         if self.sort_regime == 'fl'
@@ -856,12 +856,12 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " Describes catalog status.
-    function! l:catalog.describe() dict
+    function! catalog.describe() dict
         call s:_buffersaurus_messenger.send_info(self.format_status_message() . " (sorted " . self.format_sort_status() . ")")
     endfunction
 
     " Describes catalog status in detail.
-    function! l:catalog.describe_detail() dict
+    function! catalog.describe_detail() dict
         echon self.format_status_message() . ":\n"
         let l:rows = []
         let l:header = self.format_describe_detail_row([
@@ -888,7 +888,7 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " Formats a single row in the detail catalog description
-    function! l:catalog.format_describe_detail_row(fields)
+    function! catalog.format_describe_detail_row(fields)
         let l:row = join([
                     \ s:Format_Fill(a:fields[0], 3, 2, 1),
                     \ s:Format_Fill(a:fields[1], ((&columns - 14) / 3), -1, -1),
@@ -900,16 +900,16 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " Composes message indicating size of catalog.
-    function! l:catalog.format_status_message() dict
+    function! catalog.format_status_message() dict
         let l:message = ""
-        let l:catalog_size = self.size()
+        let catalog_size = self.size()
         let l:num_searched_files = len(self.searched_files)
-        if l:catalog_size == 0
+        if catalog_size == 0
             let l:message .= "no entries"
-        elseif l:catalog_size == 1
+        elseif catalog_size == 1
             let l:message .= "1 entry"
         else
-            let l:message .= l:catalog_size . " entries"
+            let l:message .= catalog_size . " entries"
         endif
         let l:message .= " in "
         if l:num_searched_files == 0
@@ -923,13 +923,13 @@ function! s:NewCatalog(catalog_domain, catalog_desc, default_sort)
     endfunction
 
     " Composes message indicating sort regime of catalog.
-    function! l:catalog.format_sort_status() dict
+    function! catalog.format_sort_status() dict
         let l:message = get(s:buffersaurus_catalog_sort_regime_desc, self.sort_regime, ["??", "in unspecified order"])[1]
         return l:message
     endfunction
 
     " return pseudo-object
-    return l:catalog
+    return catalog
 
 endfunction
 
@@ -982,11 +982,11 @@ endfunction
 
 " The main workhorse pseudo-object is created here ...
 function! s:NewMarksCatalog(catalog_domain, catalog_desc)
-    let l:catalog = s:NewCatalog(a:catalog_domain, a:catalog_desc, "")
+    let catalog = s:NewCatalog(a:catalog_domain, a:catalog_desc, "")
 
     " Returns dictionary of marks. If `global` is true then upper-case marks
     " will be included as well. Otherwise, only lower-case marks.
-    function! l:catalog.get_mark_list(global) dict
+    function! catalog.get_mark_list(global) dict
         if !empty(a:global) && a:global == "!"
             let l:marks = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         else
@@ -1015,7 +1015,7 @@ function! s:NewMarksCatalog(catalog_domain, catalog_desc)
         return l:mark_list
     endfunction
 
-    return l:catalog
+    return catalog
 endfunction
 
 " 1}}}
@@ -1032,26 +1032,26 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     " endif
 
     " initialize
-    let l:catalog_viewer = {}
+    let catalog_viewer = {}
 
     " Initialize object state.
-    let l:catalog_viewer["catalog"] = a:catalog
-    let l:catalog_viewer["description"] = a:desc
-    let l:catalog_viewer["buf_num"] = -1
-    let l:catalog_viewer["buf_name"] = "[[buffersaurus]]"
-    let l:catalog_viewer["title"] = "buffersaurus"
+    let catalog_viewer["catalog"] = a:catalog
+    let catalog_viewer["description"] = a:desc
+    let catalog_viewer["buf_num"] = -1
+    let catalog_viewer["buf_name"] = "[[buffersaurus]]"
+    let catalog_viewer["title"] = "buffersaurus"
     let l:buffersaurus_bufs = s:_buffersaurus_buffer_manager.find_buffers_with_var("is_buffersaurus_buffer", 1)
     if len(l:buffersaurus_bufs) > 0
-        let l:catalog_viewer["buf_num"] = l:buffersaurus_bufs[0]
+        let catalog_viewer["buf_num"] = l:buffersaurus_bufs[0]
     endif
-    let l:catalog_viewer["jump_map"] = {}
-    let l:catalog_viewer["split_mode"] = s:_buffersaurus_buffer_manager.get_split_mode()
-    let l:catalog_viewer["filter_regime"] = 0
-    let l:catalog_viewer["filter_pattern"] = ""
+    let catalog_viewer["jump_map"] = {}
+    let catalog_viewer["split_mode"] = s:_buffersaurus_buffer_manager.get_split_mode()
+    let catalog_viewer["filter_regime"] = 0
+    let catalog_viewer["filter_pattern"] = ""
 
     " Opens the buffer for viewing, creating it if needed. If non-empty first
     " argument is given, forces re-rendering of buffer.
-    function! l:catalog_viewer.open(...) dict
+    function! catalog_viewer.open(...) dict
         " get buffer number of the catalog view buffer, creating it if neccessary
         if self.buf_num < 0 || !bufexists(self.buf_num)
             " create and render a new buffer
@@ -1067,7 +1067,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Creates a new buffer, renders and opens it.
-    function! l:catalog_viewer.create_buffer() dict
+    function! catalog_viewer.create_buffer() dict
         " get a new buf reference
         let self.buf_num = bufnr(self.buf_name, 1)
         " get a viewport onto it
@@ -1081,7 +1081,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     " Opens a viewport on the buffer according, creating it if neccessary
     " according to the spawn mode. Valid buffer number must already have been
     " obtained before this is called.
-    function! l:catalog_viewer.activate_viewport() dict
+    function! catalog_viewer.activate_viewport() dict
         let l:bfwn = bufwinnr(self.buf_num)
         if l:bfwn == winnr()
             " viewport wth buffer already active and current
@@ -1097,7 +1097,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Sets up buffer environment.
-    function! l:catalog_viewer.initialize_buffer() dict
+    function! catalog_viewer.initialize_buffer() dict
         call self.claim_buffer()
         call self.setup_buffer_opts()
         call self.setup_buffer_syntax()
@@ -1108,7 +1108,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " 'Claims' a buffer by setting it to point at self.
-    function! l:catalog_viewer.claim_buffer() dict
+    function! catalog_viewer.claim_buffer() dict
         call setbufvar("%", "is_buffersaurus_buffer", 1)
         call setbufvar("%", "buffersaurus_catalog_domain", self.catalog.catalog_domain)
         call setbufvar("%", "buffersaurus_catalog_viewer", self)
@@ -1117,7 +1117,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " 'Unclaims' a buffer by stripping all buffersaurus vars
-    function! l:catalog_viewer.unclaim_buffer() dict
+    function! catalog_viewer.unclaim_buffer() dict
         for l:var in ["is_buffersaurus_buffer",
                     \ "buffersaurus_catalog_domain",
                     \ "buffersaurus_catalog_viewer",
@@ -1131,7 +1131,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Sets buffer options.
-    function! l:catalog_viewer.setup_buffer_opts() dict
+    function! catalog_viewer.setup_buffer_opts() dict
         setlocal buftype=nofile
         setlocal noswapfile
         setlocal nowrap
@@ -1145,7 +1145,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Sets buffer syntax.
-    function! l:catalog_viewer.setup_buffer_syntax() dict
+    function! catalog_viewer.setup_buffer_syntax() dict
         if has("syntax")
             syntax clear
             if self.catalog.is_show_context()
@@ -1187,7 +1187,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Sets buffer commands.
-    function! l:catalog_viewer.setup_buffer_commands() dict
+    function! catalog_viewer.setup_buffer_commands() dict
         command! -buffer -bang -nargs=* Bsfilter     :call b:buffersaurus_catalog_viewer.set_filter('<bang>', <q-args>)
         command! -buffer -bang -nargs=* Bssubstitute :call b:buffersaurus_catalog_viewer.search_and_replace('<bang>', <q-args>, 0)
         augroup BuffersaurusCatalogViewer
@@ -1198,7 +1198,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Sets buffer key maps.
-    function! l:catalog_viewer.setup_buffer_keymaps() dict
+    function! catalog_viewer.setup_buffer_keymaps() dict
 
         """" Disabling of unused modification keys
         for key in [".", "p", "P", "C", "x", "X", "r", "R", "i", "I", "a", "A", "D", "S", "U"]
@@ -1331,7 +1331,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Sets buffer folding.
-    function! l:catalog_viewer.setup_buffer_folding() dict
+    function! catalog_viewer.setup_buffer_folding() dict
         if has("folding")
             "setlocal foldcolumn=3
             setlocal foldmethod=syntax
@@ -1344,7 +1344,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Search and replace
-    function! l:catalog_viewer.search_and_replace(bang, sr_pattern, assume_last_search_pattern) dict
+    function! catalog_viewer.search_and_replace(bang, sr_pattern, assume_last_search_pattern) dict
         if a:bang
             let l:include_context_lines = 1
         else
@@ -1376,7 +1376,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Applies filter.
-    function! l:catalog_viewer.set_filter(regime, pattern) dict
+    function! catalog_viewer.set_filter(regime, pattern) dict
         if (type(a:regime) == type(0) && a:regime != 0) || (type(a:regime) == type("") && a:regime != "!")
             if a:pattern == "*" || a:pattern == ".*"
                 let self.filter_pattern = ""
@@ -1417,12 +1417,12 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Toggles filter.
-    function! l:catalog_viewer.toggle_filter() dict
+    function! catalog_viewer.toggle_filter() dict
         call self.set_filter(!self.filter_regime, "")
     endfunction
 
     " Ask user for filter pattern, and, if given, set and apply it.
-    function! l:catalog_viewer.prompt_and_apply_filter()
+    function! catalog_viewer.prompt_and_apply_filter()
         let l:ipattern = input("Enter filter pattern: ")
         if empty(l:ipattern)
             return
@@ -1432,7 +1432,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Return true if the line is NOT to be filtered out.
-    function! l:catalog_viewer.is_pass_filter(text) dict
+    function! catalog_viewer.is_pass_filter(text) dict
         if !self.filter_regime || empty(self.filter_pattern) || a:text =~ self.filter_pattern
             return 1
         else
@@ -1441,13 +1441,13 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Sets buffer status line.
-    function! l:catalog_viewer.setup_buffer_statusline() dict
+    function! catalog_viewer.setup_buffer_statusline() dict
         " setlocal statusline=\-buffersaurus\-\|\ %{BuffersaurusStatusLineCurrentLineInfo()}%<%=\|%{BuffersaurusStatusLineSortRegime()}\|%{BuffersaurusStatusLineFilterRegime()}
         setlocal statusline=[[buffersaurus]]%{BuffersaurusStatusLineCurrentLineInfo()}%<%=\|%{BuffersaurusStatusLineSortRegime()}
     endfunction
 
     " Populates the buffer with the catalog index.
-    function! l:catalog_viewer.render_buffer() dict
+    function! catalog_viewer.render_buffer() dict
         setlocal modifiable
         call self.claim_buffer()
         call self.clear_buffer()
@@ -1455,9 +1455,9 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         let l:show_context = self.catalog.is_show_context()
         let l:context_size = self.catalog.context_size
         call self.setup_buffer_syntax()
-        let l:catalog_index_groups = self.catalog.get_index_groups()
+        let catalog_index_groups = self.catalog.get_index_groups()
         let prev_entry_index_group_label = ''
-        for l:entry_index_group in l:catalog_index_groups
+        for l:entry_index_group in catalog_index_groups
             let [l:entry_index_group_label, l:entry_indexes] = l:entry_index_group
             if prev_entry_index_group_label != l:entry_index_group_label
                 call self.append_line('::: ' . l:entry_index_group_label . ' :::',
@@ -1489,7 +1489,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Renders contexted entry.
-    function! l:catalog_viewer.render_contexted_entry(index, entry, context_size) dict
+    function! catalog_viewer.render_contexted_entry(index, entry, context_size) dict
         let l:lnum = a:entry.lnum
         let l:buf_num = a:entry.buf_num
         let l:matched_line = self.fetch_buf_line(l:buf_num, l:lnum)
@@ -1523,7 +1523,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Renders an uncontexted entry.
-    function! l:catalog_viewer.render_uncontexted_entry(index, entry) dict
+    function! catalog_viewer.render_uncontexted_entry(index, entry) dict
         let l:index_field = self.render_entry_index(a:index)
         let l:lnum_field = s:Format_AlignRight(a:entry.lnum, 14 - len(l:index_field), " ")
         let l:src_line = self.fetch_buf_line(a:entry.buf_num, a:entry.lnum)
@@ -1534,12 +1534,12 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Renders the index.
-    function! l:catalog_viewer.render_entry_index(index) dict
+    function! catalog_viewer.render_entry_index(index) dict
         return "  [" . get(self.catalog.entry_labels, a:index, string(a:index)) . "] "
     endfunction
 
     " Appends a line to the buffer and registers it in the line log.
-    function! l:catalog_viewer.append_line(text, entry_index, jump_to_buf_num, jump_to_lnum, jump_to_col, is_matched_line, is_content_line, ...) dict
+    function! catalog_viewer.append_line(text, entry_index, jump_to_buf_num, jump_to_lnum, jump_to_col, is_matched_line, is_content_line, ...) dict
         let l:line_map = {
                     \ "entry_index" : a:entry_index,
                     \ "entry_label" : get(self.catalog.entry_labels, a:entry_index, string(a:entry_index)),
@@ -1555,7 +1555,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Close and quit the viewer.
-    function! l:catalog_viewer.close(restore_prev_window) dict
+    function! catalog_viewer.close(restore_prev_window) dict
         if self.buf_num < 0 || !bufexists(self.buf_num)
             return
         endif
@@ -1575,7 +1575,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         execute("bwipe " . self.buf_num)
     endfunction
 
-    function! l:catalog_viewer.highlight_current_line()
+    function! catalog_viewer.highlight_current_line()
         " if line(".") != b:buffersaurus_cur_line
             let l:prev_line = b:buffersaurus_cur_line
             let b:buffersaurus_cur_line = line(".")
@@ -1585,14 +1585,14 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Clears the buffer contents.
-    function! l:catalog_viewer.clear_buffer() dict
+    function! catalog_viewer.clear_buffer() dict
         call cursor(1, 1)
         exec 'silent! normal! "_dG'
     endfunction
 
     " Returns a string corresponding to line `ln1` from buffer ``buf``.
     " If the line is unavailable, then "#INVALID#LINE#" is returned.
-    function! l:catalog_viewer.fetch_buf_line(buf, ln1)
+    function! catalog_viewer.fetch_buf_line(buf, ln1)
         let l:lines = getbufline(a:buf, a:ln1)
         if len(l:lines) > 0
             return l:lines[0]
@@ -1605,7 +1605,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     " `ln1` to `ln2` from buffer `buf`. If lines are not available, returns a
     " list with (ln2-ln1+1) elements consisting of copies of the string
     " "#INVALID LINE#".
-    function! l:catalog_viewer.fetch_buf_lines(buf, ln1, ln2)
+    function! catalog_viewer.fetch_buf_lines(buf, ln1, ln2)
         let l:lines = getbufline(a:buf, a:ln1, a:ln2)
         if len(l:lines) > 0
             return l:lines
@@ -1620,7 +1620,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " from NERD_Tree, via VTreeExplorer: determine the number of windows open
     " to this buffer number.
-    function! l:catalog_viewer.num_viewports_on_buffer(bnum) dict
+    function! catalog_viewer.num_viewports_on_buffer(bnum) dict
         let cnt = 0
         let winnum = 1
         while 1
@@ -1637,7 +1637,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " from NERD_Tree: find the window number of the first normal window
-    function! l:catalog_viewer.first_usable_viewport() dict
+    function! catalog_viewer.first_usable_viewport() dict
         let i = 1
         while i <= winnr("$")
             let bnum = winbufnr(i)
@@ -1654,7 +1654,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " from NERD_Tree: returns 0 if opening a file from the tree in the given
     " window requires it to be split, 1 otherwise
-    function! l:catalog_viewer.is_usable_viewport(winnumber) dict
+    function! catalog_viewer.is_usable_viewport(winnumber) dict
         "gotta split if theres only one window (i.e. the NERD tree)
         if winnr("$") ==# 1
             return 0
@@ -1677,7 +1677,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Acquires a viewport to show the source buffer. Returns the split command
     " to use when switching to the buffer.
-    function! l:catalog_viewer.acquire_viewport(split_cmd)
+    function! catalog_viewer.acquire_viewport(split_cmd)
         if self.split_mode == "buffer" && empty(a:split_cmd)
             " buffersaurus used original buffer's viewport,
             " so the the buffersaurus viewport is the viewport to use
@@ -1711,7 +1711,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Perform run command on all lines in the catalog
-    function! l:catalog_viewer.execute_command(command_text, include_context_lines, rebuild_catalog) dict
+    function! catalog_viewer.execute_command(command_text, include_context_lines, rebuild_catalog) dict
         if a:command_text == ""
             let l:command_text = input("Command: ")
         else
@@ -1748,7 +1748,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         if working_buf_num != catalog_buf_num
             call setpos('.', start_pos)
         endif
-        execute("silent! keepalt keepjumps buffer " . l:catalog_buf_num)
+        execute("silent! keepalt keepjumps buffer " . catalog_buf_num)
         if a:rebuild_catalog
             call self.rebuild_catalog()
         endif
@@ -1759,7 +1759,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     " visible there. If not, then it looks for the first window with the
     " buffer showing and visits it there. If no windows are showing the
     " buffer, ... ?
-    function! l:catalog_viewer.visit_buffer(buf_num, split_cmd) dict
+    function! catalog_viewer.visit_buffer(buf_num, split_cmd) dict
         " acquire window
         let l:split_cmd = self.acquire_viewport(a:split_cmd)
         " switch to buffer in acquired window
@@ -1779,7 +1779,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
 
     " Go to the line mapped to by the current line/index of the catalog
     " viewer.
-    function! l:catalog_viewer.visit_target(keep_catalog, refocus_catalog, split_cmd) dict
+    function! catalog_viewer.visit_target(keep_catalog, refocus_catalog, split_cmd) dict
         let l:cur_line = line(".")
         if !has_key(l:self.jump_map, l:cur_line)
             call s:_buffersaurus_messenger.send_info("Not a valid navigation line")
@@ -1824,7 +1824,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Finds next line with occurrence of a rendered index
-    function! l:catalog_viewer.goto_index_entry(direction, visit_target, refocus_catalog) dict
+    function! catalog_viewer.goto_index_entry(direction, visit_target, refocus_catalog) dict
         let l:ok = self.goto_pattern("^  \[", a:direction)
         execute("normal! zz")
         if l:ok && a:visit_target
@@ -1833,7 +1833,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Finds next line with occurrence of a file pattern.
-    function! l:catalog_viewer.goto_file_start(direction, visit_target, refocus_catalog) dict
+    function! catalog_viewer.goto_file_start(direction, visit_target, refocus_catalog) dict
         let l:ok = self.goto_pattern("^:::", a:direction)
         execute("normal! zz")
         if l:ok && a:visit_target
@@ -1842,7 +1842,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Finds next occurrence of specified pattern.
-    function! l:catalog_viewer.goto_pattern(pattern, direction) dict range
+    function! catalog_viewer.goto_pattern(pattern, direction) dict range
         if a:direction == "b" || a:direction == "p"
             let l:flags = "b"
             " call cursor(line(".")-1, 0)
@@ -1877,7 +1877,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Toggles context on/off.
-    function! l:catalog_viewer.toggle_context() dict
+    function! catalog_viewer.toggle_context() dict
         let self.catalog.show_context = !self.catalog.show_context
         let l:line = line(".")
         if has_key(b:buffersaurus_catalog_viewer.jump_map, l:line)
@@ -1904,21 +1904,21 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " Cycles sort regime.
-    function! l:catalog_viewer.cycle_sort_regime() dict
+    function! catalog_viewer.cycle_sort_regime() dict
         call self.catalog.cycle_sort_regime()
         call self.open(1)
         call s:_buffersaurus_messenger.send_info("sorted " . self.catalog.format_sort_status())
     endfunction
 
     " Rebuilds catalog.
-    function! l:catalog_viewer.rebuild_catalog() dict
+    function! catalog_viewer.rebuild_catalog() dict
         call self.catalog.rebuild()
         call s:_buffersaurus_messenger.send_info("updated index: found " . self.catalog.format_status_message())
         call self.open(1)
     endfunction
 
     " Cycles autodismiss modes
-    function! l:catalog_viewer.cycle_autodismiss_modes() dict
+    function! catalog_viewer.cycle_autodismiss_modes() dict
         if (g:buffersaurus_autodismiss_on_select)
             let g:buffersaurus_autodismiss_on_select = 0
         call s:_buffersaurus_messenger.send_info("will stay open on selection (autodismiss-on-select: OFF)")
@@ -1929,7 +1929,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     endfunction
 
     " return object
-    return l:catalog_viewer
+    return catalog_viewer
 
 endfunction
 
@@ -1962,23 +1962,23 @@ function! s:GetLastActiveCatalog()
         return 0
     endif
     if exists("s:_buffersaurus_last_catalog_viewed")
-        let l:catalog = s:_buffersaurus_last_catalog_viewed.catalog
+        let catalog = s:_buffersaurus_last_catalog_viewed.catalog
     elseif exists("s:_buffersaurus_last_catalog_built")
-        let l:catalog = s:_buffersaurus_last_catalog_built.catalog
+        let catalog = s:_buffersaurus_last_catalog_built.catalog
     endif
-    return l:catalog
+    return catalog
 endfunction
 
 function! buffersaurus#IndexTerms(term_name, bang, sort_regime)
     let l:worklist = s:ComposeBufferTargetList(a:bang)
-    let l:catalog = s:_buffersaurus_indexer.index_terms(l:worklist, a:term_name, a:sort_regime)
-    call s:ActivateCatalog("term", l:catalog)
+    let catalog = s:_buffersaurus_indexer.index_terms(l:worklist, a:term_name, a:sort_regime)
+    call s:ActivateCatalog("term", catalog)
 endfunction
 
 function! buffersaurus#IndexTags(bang)
     let l:worklist = s:ComposeBufferTargetList(a:bang)
-    let l:catalog = s:_buffersaurus_indexer.index_tags(l:worklist)
-    call s:ActivateCatalog("tags", l:catalog)
+    let catalog = s:_buffersaurus_indexer.index_tags(l:worklist)
+    call s:ActivateCatalog("tags", catalog)
 endfunction
 
 function! buffersaurus#GlobalSearchAndReplace()
@@ -1987,12 +1987,12 @@ function! buffersaurus#GlobalSearchAndReplace()
         return
     endif
     let l:worklist = s:ComposeBufferTargetList(0)
-    let l:catalog = s:_buffersaurus_indexer.index_pattern(l:worklist, l:pattern, '')
+    let catalog = s:_buffersaurus_indexer.index_pattern(l:worklist, l:pattern, '')
     let s:last_searched_pattern = l:pattern
-    let s:_buffersaurus_last_catalog_built = l:catalog
-    let s:_buffersaurus_last_catalog_viewed = l:catalog.open()
-    if l:catalog.size() > 0
-        call l:catalog.describe()
+    let s:_buffersaurus_last_catalog_built = catalog
+    let s:_buffersaurus_last_catalog_viewed = catalog.open()
+    if catalog.size() > 0
+        call catalog.describe()
         call s:_buffersaurus_last_catalog_viewed.search_and_replace(0, "", 1)
     else
         call s:_buffersaurus_messenger.send_status("no matches")
@@ -2005,9 +2005,9 @@ function! buffersaurus#IndexPatterns(pattern, bang, sort_regime)
         return
     endif
     let l:worklist = s:ComposeBufferTargetList(a:bang)
-    let l:catalog = s:_buffersaurus_indexer.index_pattern(l:worklist, a:pattern, a:sort_regime)
+    let catalog = s:_buffersaurus_indexer.index_pattern(l:worklist, a:pattern, a:sort_regime)
     let s:last_searched_pattern = a:pattern
-    call s:ActivateCatalog("pattern", l:catalog)
+    call s:ActivateCatalog("pattern", catalog)
     if !exists("g:buffersaurus_set_search_register") || g:buffersaurus_set_search_register
         let @/=a:pattern
     endif
@@ -2035,13 +2035,13 @@ function! buffersaurus#GotoEntry(direction)
 endfunction
 
 function! buffersaurus#ShowCatalogStatus(full)
-    let l:catalog = s:GetLastActiveCatalog()
-    if type(l:catalog) == type(0) && l:catalog == 0
+    let catalog = s:GetLastActiveCatalog()
+    if type(catalog) == type(0) && catalog == 0
         call s:_buffersaurus_messenger.send_error("No index available")
     elseif empty(a:full)
-        call l:catalog.describe()
+        call catalog.describe()
     else
-        call l:catalog.describe_detail()
+        call catalog.describe_detail()
     endif
 endfunction
 
