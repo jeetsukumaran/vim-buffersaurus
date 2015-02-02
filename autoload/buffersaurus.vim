@@ -1048,6 +1048,7 @@ function! s:NewCatalogViewer(catalog, desc, ...)
     let catalog_viewer["split_mode"] = s:_buffersaurus_buffer_manager.get_split_mode()
     let catalog_viewer["filter_regime"] = 0
     let catalog_viewer["filter_pattern"] = ""
+    let catalog_viewer["match_highlight_id"] = 0
 
     " Opens the buffer for viewing, creating it if needed. If non-empty first
     " argument is given, forces re-rendering of buffer.
@@ -1579,8 +1580,10 @@ function! s:NewCatalogViewer(catalog, desc, ...)
         " if line(".") != b:buffersaurus_cur_line
             let l:prev_line = b:buffersaurus_cur_line
             let b:buffersaurus_cur_line = line(".")
-            3match none
-            exec '3match BuffersaurusCurrentEntry /^\%'. b:buffersaurus_cur_line .'l.*/'
+            if exists("self.match_highlight_id") && self.match_highlight_id != 0
+                call matchdelete(self.match_highlight_id)
+            endif
+            let self.match_highlight_id = matchadd("BuffersaurusCurrentEntry", '\%'. b:buffersaurus_cur_line .'l')
         " endif
     endfunction
 
