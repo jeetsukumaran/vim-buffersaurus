@@ -1581,7 +1581,10 @@ function! s:NewCatalogViewer(catalog, desc, ...)
             let l:prev_line = b:buffersaurus_cur_line
             let b:buffersaurus_cur_line = line(".")
             if exists("self.match_highlight_id") && self.match_highlight_id != 0
-                call matchdelete(self.match_highlight_id)
+                try
+                    call matchdelete(self.match_highlight_id)
+                catch // " 803: ID not found
+                endtry
             endif
             let self.match_highlight_id = matchadd("BuffersaurusCurrentEntry", '\%'. b:buffersaurus_cur_line .'l')
         " endif
