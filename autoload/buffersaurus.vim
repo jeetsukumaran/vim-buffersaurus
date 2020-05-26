@@ -583,11 +583,11 @@ function! s:NewIndexer()
         let l:work_list = []
         for l:buf_num in l:req_buf_list
             if !bufexists(l:buf_num)
-                throw s:_buffersaurus_messenger.format_exception('Buffer does not exist: "' . l:buf_num . '"')
+                " throw s:_buffersaurus_messenger.format_exception('Buffer does not exist: "' . l:buf_num . '"')
             elseif !buflisted(l:buf_num)
-                call s:_buffersaurus_messenger.send_warning('Skipping unlisted buffer: [' . l:buf_num . '] "' . bufname(l:buf_num) . '"')
+                " call s:_buffersaurus_messenger.send_warning('Skipping unlisted buffer: [' . l:buf_num . '] "' . bufname(l:buf_num) . '"')
             elseif !empty(getbufvar(l:buf_num, "is_buffersaurus_buffer"))
-                call s:_buffersaurus_messenger.send_warning('Skipping buffersaurus buffer: [' . l:buf_num . '] "' . bufname(l:buf_num) . '"')
+                " call s:_buffersaurus_messenger.send_warning('Skipping buffersaurus buffer: [' . l:buf_num . '] "' . bufname(l:buf_num) . '"')
             else
                 call add(l:work_list, l:buf_num)
                 if !bufloaded(l:buf_num)
